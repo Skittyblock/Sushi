@@ -108,6 +108,16 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 
 %end
 
+// Disable reachability when banner is presented from the bottom
+%hook SBReachabilityManager
+
+- (void)toggleReachability {
+	if (((SUWindow *)nowPlayingControllerInstance.view.superview).enabled == YES && nowPlayingControllerInstance.view.superview.hidden == NO && nowPlayingControllerInstance.location == 1) return;
+	%orig;
+}
+
+%end
+
 // App List
 static NSMutableDictionary *appList() {
 	NSMutableDictionary *mutableDict = [[NSMutableDictionary alloc] init];

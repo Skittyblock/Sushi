@@ -151,7 +151,7 @@
 	self.dismissTimer = nil;
 	self.lastTouchedDate = nil;
 	self.bannerView.userInteractionEnabled = NO;
-	[UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+	[UIView animateWithDuration:0.4 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
 		CGFloat offset = -(self.bannerOffset + self.bannerHeightConstraint.constant / 2) * 2;
 		if (self.location == 1) offset *= -1;
 		self.bannerView.transform = CGAffineTransformTranslate(CGAffineTransformIdentity, 0, offset);

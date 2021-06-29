@@ -17,20 +17,18 @@
 		self.layer.shadowRadius = 10;
 		self.layer.shadowOffset = CGSizeMake(0, 5);
 
-		// Blur background
-		self.visualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemMaterial]];
-		self.visualEffectView.layer.cornerRadius = 10;
-		self.visualEffectView.clipsToBounds = YES;
-		self.visualEffectView.hidden = YES;
-		self.visualEffectView.translatesAutoresizingMaskIntoConstraints = NO;
-		[self addSubview:self.visualEffectView];
-
 		// Content view (for bounds clipping)
 		self.contentView = [[UIView alloc] init];
 		self.contentView.layer.cornerRadius = 10;
 		self.contentView.clipsToBounds = YES;
 		self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
 		[self addSubview:self.contentView];
+
+		// Blur background
+		self.visualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemMaterial]];
+		self.visualEffectView.hidden = YES;
+		self.visualEffectView.translatesAutoresizingMaskIntoConstraints = NO;
+		[self.contentView addSubview:self.visualEffectView];
 
 		// Now playing app icon / album art
 		self.iconView = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -173,7 +171,7 @@
 
 	if (self.darkMode && self.matchSystemTheme) {
 		if (self.oled && !self.blurred) self.backgroundColor = [UIColor systemBackgroundColor];
-		else if (!self.blurred) self.backgroundColor = [UIColor secondarySystemBackgroundColor];
+		else if (!self.blurred) self.backgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
 		else if (self.blurred) self.visualEffectView.effect = [UIBlurEffect effectWithStyle:[self getBlurStyleWithAppearance:0 thickness:self.blurThickness]];
 		self.titleLabel.textColor = [UIColor labelColor];
 		self.messageLabel.textColor = [UIColor sushiSecondaryLabelColor];
