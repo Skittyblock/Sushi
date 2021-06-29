@@ -49,6 +49,7 @@
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(nowPlayingUpdate:) name:@"xyz.skitty.sushi.songchange" object:nil];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appPlayingUpdate:) name:@"xyz.skitty.sushi.appchange" object:nil];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(expansionChanged:) name:@"xyz.skitty.sushi.expanded" object:nil];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sendTestBanner) name:@"xyz.skitty.sushi.test" object:nil];
 	}
 
 	return self;
@@ -232,6 +233,26 @@
 		self.bannerWidthConstraint.active = YES;
 		self.bannerHeightConstraint.constant = 44;
 	}
+}
+
+- (void)sendTestBanner {
+	NSDictionary *fakeMusicInfo = @{
+		@"currentApplication": @"com.apple.Preferences",
+		@"locked": @(NO),
+		@"enabledInApp": @(YES),
+		@"blacklistedApps": @[],
+		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoTitle: @"Title",
+		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtist: @"Artist",
+		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtworkData: UIImagePNGRepresentation([UIImage _applicationIconImageForBundleIdentifier:@"com.apple.Music" format:2]),
+		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoElapsedTime: @(0),
+		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoDuration: @(0),
+		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoPlaybackRate: @(0)
+	};
+	self.bannerView.applicationIcon = [UIImage _applicationIconImageForBundleIdentifier:@"com.apple.Preferences" format:2];
+	self.nowPlayingApp = @"com.apple.Preferences";
+	self.currentTitle = @"Old Title";
+	self.currentArtist = @"Old Artist";
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"xyz.skitty.sushi.songchange" object:nil userInfo:fakeMusicInfo];
 }
 
 - (void)setNowPlayingApp:(NSString *)nowPlayingApp {
