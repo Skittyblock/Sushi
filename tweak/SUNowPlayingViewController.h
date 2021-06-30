@@ -9,6 +9,8 @@
 @property (nonatomic, strong) NSString *currentTitle;
 @property (nonatomic, strong) NSString *currentArtist;
 
+@property (nonatomic, assign) BOOL testingBanner;
+@property (nonatomic, strong) NSString *previousNowPlayingApp;
 @property (nonatomic, strong) NSString *nowPlayingApp;
 @property (nonatomic, strong) NSTimer *dismissTimer;
 @property (nonatomic, strong) NSDate *lastTouchedDate;

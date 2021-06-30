@@ -84,7 +84,17 @@
 		if ([notification.userInfo[@"enabledInApp"] isEqual:@(0)] && notification.userInfo[@"currentApplication"] == self.nowPlayingApp) return;
 		if ([(NSArray *)notification.userInfo[@"blacklistedApps"] containsObject:self.nowPlayingApp]) return;
 		if ([notification.userInfo[@"locked"] isEqual:@(1)]) return;
-		
+
+		if (self.previousNowPlayingApp) {
+			self.nowPlayingApp = self.previousNowPlayingApp;
+			self.previousNowPlayingApp = nil;
+		}
+		if (self.testingBanner) {
+			self.previousNowPlayingApp = self.nowPlayingApp;
+			self.nowPlayingApp = @"com.apple.Preferences";
+			self.testingBanner = NO;
+		}
+
 		if (!self.bannerView.expanded) {
 			[self animateOutWithCompletion:^(BOOL finished) {
 				self.bannerView.title = title;
@@ -92,9 +102,11 @@
 				self.bannerView.progressView.duration = [duration doubleValue];
 				if (elapsed != nil) self.bannerView.progressView.elapsedTime = [elapsed doubleValue];
 				if (artworkData != nil) self.bannerView.albumImage = [UIImage imageWithData:artworkData];
+				self.bannerView.applicationIcon = [UIImage _applicationIconImageForBundleIdentifier:self.nowPlayingApp format:2];
 				[self animateIn];
 			}];
 		} else {
+			self.bannerView.applicationIcon = [UIImage _applicationIconImageForBundleIdentifier:self.nowPlayingApp format:2];
 			self.bannerView.title = title;
 			self.bannerView.artist = artist;
 			self.bannerView.progressView.duration = [duration doubleValue];
@@ -248,8 +260,8 @@
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoDuration: @(0),
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoPlaybackRate: @(0)
 	};
-	self.bannerView.applicationIcon = [UIImage _applicationIconImageForBundleIdentifier:@"com.apple.Preferences" format:2];
-	self.nowPlayingApp = @"com.apple.Preferences";
+	// [[NSClassFromString(@"SBMediaController") sharedInstance] _setNowPlayingApplication:[[NSClassFromString(@"SBApplicationController") sharedInstance] applicationWithBundleIdentifier:@"com.apple.Preferences"]];
+	self.testingBanner = YES;
 	self.currentTitle = @"Old Title";
 	self.currentArtist = @"Old Artist";
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"xyz.skitty.sushi.songchange" object:nil userInfo:fakeMusicInfo];
