@@ -11,15 +11,17 @@
 @property (nonatomic, assign) BOOL darkMode;
 @property (nonatomic, assign) BOOL oled;
 @property (nonatomic, assign) NSInteger blurThickness;
+@property (nonatomic, assign) CGFloat tintStrength;
 
 @property (nonatomic, assign) NSString *nowPlayingAppIdentifier;
 
 @property (nonatomic, strong) UIImage *applicationIcon;
 @property (nonatomic, strong) UIImage *albumImage;
-@property (nonatomic, weak) NSString *title;
-@property (nonatomic, weak) NSString *artist;
+@property (nonatomic, strong) NSString *title;
+@property (nonatomic, strong) NSString *artist;
 
 @property (nonatomic, strong) UIVisualEffectView *visualEffectView;
+@property (nonatomic, strong) UIView *tintView;
 @property (nonatomic, strong) UIView *contentView;
 
 @property (nonatomic, strong) UIButton *iconView;

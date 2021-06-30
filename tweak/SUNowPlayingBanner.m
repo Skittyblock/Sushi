@@ -2,6 +2,7 @@
 #import "SBUIController.h"
 #import "SBApplication.h"
 #import "SBApplicationController.h"
+#import "UIImage+ColorArt.h"
 #import "UIColor+SushiColors.h"
 
 @implementation SUNowPlayingBanner
@@ -23,6 +24,11 @@
 		self.contentView.clipsToBounds = YES;
 		self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
 		[self addSubview:self.contentView];
+
+		self.tintView = [[UIView alloc] init];
+		self.tintView.alpha = 0;
+		self.tintView.translatesAutoresizingMaskIntoConstraints = NO;
+		[self.contentView addSubview:self.tintView];
 
 		// Blur background
 		self.visualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemMaterial]];
@@ -82,6 +88,9 @@
 }
 
 - (void)activateConstraints {
+	[self.tintView.widthAnchor constraintEqualToAnchor:self.widthAnchor].active = YES;
+	[self.tintView.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
+
 	[self.visualEffectView.widthAnchor constraintEqualToAnchor:self.widthAnchor].active = YES;
 	[self.visualEffectView.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
 
@@ -328,14 +337,20 @@
 	} completion:nil];
 }
 
+- (void)setTintStrength:(CGFloat)tintStrength {
+	_tintStrength = tintStrength;
+	self.tintView.alpha = tintStrength;
+}
+
 - (void)setApplicationIcon:(UIImage *)icon {
 	_applicationIcon = icon;
-	if (!self.expanded && self.iconView) [self.iconView setImage:icon forState:UIControlStateNormal];
+	if (!self.expanded) [self.iconView setImage:icon forState:UIControlStateNormal];
 }
 
 - (void)setAlbumImage:(UIImage *)image {
 	_albumImage = image;
-	if (self.expanded && self.iconView) [self.iconView setImage:image forState:UIControlStateNormal];
+	self.tintView.backgroundColor = [image backgroundColor];
+	if (self.expanded) [self.iconView setImage:image forState:UIControlStateNormal];
 }
 
 - (void)setTitle:(NSString *)title {

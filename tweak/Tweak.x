@@ -45,6 +45,7 @@ static void refreshPrefs() {
 	nowPlayingControllerInstance.bannerView.oled = [([settings objectForKey:@"oled"] ?: @(NO)) boolValue];
 	nowPlayingControllerInstance.bannerView.blurred = [([settings objectForKey:@"blurred"] ?: @(NO)) boolValue];
 	nowPlayingControllerInstance.bannerView.blurThickness = [([settings objectForKey:@"blurThickness"] ?: @(1)) intValue];
+	nowPlayingControllerInstance.bannerView.tintStrength = [([settings objectForKey:@"tint"] ?: @(NO)) boolValue] ? [([settings objectForKey:@"tintStrength"] ?: @(0.3)) floatValue] : 0;
 	[nowPlayingControllerInstance.bannerView updateColors];
 
 	BOOL customDismissInterval = [([settings objectForKey:@"customDismissInterval"] ?: @(NO)) boolValue];
