@@ -255,12 +255,11 @@
 		@"blacklistedApps": @[],
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoTitle: @"Title",
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtist: @"Artist",
-		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtworkData: UIImagePNGRepresentation([UIImage _applicationIconImageForBundleIdentifier:@"com.apple.Music" format:2]),
+		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtworkData: UIImagePNGRepresentation([UIImage imageWithContentsOfFile:@"/Library/Application Support/Sushi/MusicIcon.png"]),
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoElapsedTime: @(0),
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoDuration: @(0),
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoPlaybackRate: @(0)
 	};
-	// [[NSClassFromString(@"SBMediaController") sharedInstance] _setNowPlayingApplication:[[NSClassFromString(@"SBApplicationController") sharedInstance] applicationWithBundleIdentifier:@"com.apple.Preferences"]];
 	self.testingBanner = YES;
 	self.currentTitle = @"Old Title";
 	self.currentArtist = @"Old Artist";
