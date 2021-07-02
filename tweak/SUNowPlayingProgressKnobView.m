@@ -10,7 +10,7 @@
 		self.knob.backgroundColor = [UIColor blackColor];
 		self.knob.layer.cornerRadius = 3.5;
 		self.knob.layer.shadowColor = [UIColor blackColor].CGColor;
-		self.knob.layer.shadowOpacity = 0.15;
+		self.knob.layer.shadowOpacity = 0.2;
 		self.knob.layer.shadowRadius = 3;
 		self.knob.layer.shadowOffset = CGSizeMake(0, 1);
 		self.knob.translatesAutoresizingMaskIntoConstraints = NO;
@@ -22,8 +22,8 @@
 
 		[self.hitbox.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
 		[self.hitbox.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-		[self.hitbox.widthAnchor constraintEqualToConstant:13].active = YES;
-		[self.hitbox.heightAnchor constraintEqualToConstant:13].active = YES;
+		[self.hitbox.widthAnchor constraintEqualToConstant:19].active = YES;
+		[self.hitbox.heightAnchor constraintEqualToConstant:19].active = YES;
 
 		[self.knob.centerXAnchor constraintEqualToAnchor:self.hitbox.centerXAnchor].active = YES;
 		[self.knob.centerYAnchor constraintEqualToAnchor:self.hitbox.centerYAnchor].active = YES;

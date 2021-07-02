@@ -105,9 +105,9 @@
 	[self.glyphView.heightAnchor constraintEqualToConstant:19].active = YES;
 
 	[self.progressView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor].active = YES;
-	[self.progressView.topAnchor constraintEqualToAnchor:self.topAnchor constant:80].active = YES;
-	[self.progressView.widthAnchor constraintEqualToConstant:300].active = YES;
-	[self.progressView.heightAnchor constraintEqualToConstant:28].active = YES;
+	[self.progressView.topAnchor constraintEqualToAnchor:self.topAnchor constant:77].active = YES;
+	[self.progressView.widthAnchor constraintEqualToConstant:312].active = YES;
+	[self.progressView.heightAnchor constraintEqualToConstant:31].active = YES;
 
 	[self.musicControlsView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor].active = YES;
 	[self.musicControlsView.topAnchor constraintEqualToAnchor:self.topAnchor constant:106].active = YES;

@@ -55,30 +55,30 @@
 }
 
 - (void)activateConstraints {
-	[self.remainingTrack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
-	[self.remainingTrack.topAnchor constraintEqualToAnchor:self.topAnchor constant:5].active = YES;
+	[self.remainingTrack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:6].active = YES;
+	[self.remainingTrack.topAnchor constraintEqualToAnchor:self.topAnchor constant:8].active = YES;
 	[self.remainingTrack.widthAnchor constraintEqualToConstant:300].active = YES;
 	[self.remainingTrack.heightAnchor constraintEqualToConstant:3].active = YES;
 
-	[self.elapsedTrack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
-	[self.elapsedTrack.topAnchor constraintEqualToAnchor:self.topAnchor constant:5].active = YES;
+	[self.elapsedTrack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:6].active = YES;
+	[self.elapsedTrack.topAnchor constraintEqualToAnchor:self.topAnchor constant:8].active = YES;
 	self.elapsedTrackWidthConstraint = [self.elapsedTrack.widthAnchor constraintEqualToConstant:3];
 	self.elapsedTrackWidthConstraint.active = YES;
 	[self.elapsedTrack.heightAnchor constraintEqualToConstant:3].active = YES;
 
-	self.knobViewLeadingConstraint = [self.knobView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:-3];
+	self.knobViewLeadingConstraint = [self.knobView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor];
 	self.knobViewLeadingConstraint.active = YES;
 	[self.knobView.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-	[self.knobView.widthAnchor constraintEqualToConstant:13].active = YES;
-	[self.knobView.heightAnchor constraintEqualToConstant:13].active = YES;
+	[self.knobView.widthAnchor constraintEqualToConstant:19].active = YES;
+	[self.knobView.heightAnchor constraintEqualToConstant:19].active = YES;
 
-	[self.elapsedLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
-	[self.elapsedLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:16].active = YES;
+	[self.elapsedLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:6].active = YES;
+	[self.elapsedLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:19].active = YES;
 	[self.elapsedLabel.widthAnchor constraintEqualToConstant:50].active = YES;
 	[self.elapsedLabel.heightAnchor constraintEqualToConstant:12].active = YES;
 
-	[self.remainingLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
-	[self.remainingLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:16].active = YES;
+	[self.remainingLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-6].active = YES;
+	[self.remainingLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:19].active = YES;
 	[self.remainingLabel.widthAnchor constraintEqualToConstant:50].active = YES;
 	[self.remainingLabel.heightAnchor constraintEqualToConstant:12].active = YES;
 }
@@ -95,6 +95,9 @@
 
 - (void)tickTimeElapsed {
 	MRMediaRemoteGetNowPlayingInfo(dispatch_get_main_queue(), ^(CFDictionaryRef result) {
+		NSNumber *playbackRate = [(__bridge NSDictionary *)result objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoPlaybackRate];
+		if ([playbackRate isEqual:@(0)]) return;
+
 		CFAbsoluteTime timeStarted = CFDateGetAbsoluteTime((CFDateRef)[(__bridge NSDictionary *)result objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoTimestamp]);
 		double lastStoredTime = [[(__bridge NSDictionary *)result objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoElapsedTime] doubleValue];
 		double realTimeElapsed = (CFAbsoluteTimeGetCurrent() - timeStarted) + (lastStoredTime > 1 ? lastStoredTime : 0);
@@ -124,7 +127,7 @@
 	NSUInteger m = ((NSUInteger)floor(elapsed) / 60);
 	NSUInteger s = (NSUInteger)floor(elapsed) % 60;
 
-	CGFloat width = (self.duration > 0 ? (elapsed/(self.duration))*297 : 0) + 3;
+	CGFloat width = (self.duration > 0 ? (elapsed/(self.duration))*293 : 0) + 6;
 
 	self.elapsedTrackWidthConstraint.constant = width;
 	self.knobViewLeadingConstraint.constant = width-6;
@@ -147,15 +150,15 @@
 	if (sender.state == UIGestureRecognizerStateBegan) {
 		[self stopTimer];
 	} else if (sender.state == UIGestureRecognizerStateChanged) {
-		CGFloat distance = self.knobViewLeadingConstraint.constant+3 + [sender translationInView:self].x;
+		CGFloat distance = self.knobViewLeadingConstraint.constant + [sender translationInView:self].x;
 		if (distance < 0) distance = 0;
-		else if (distance > 297) distance = 297;
+		else if (distance > 293) distance = 293;
 
 		if (self.duration <= 0) {
-			self.elapsedTrackWidthConstraint.constant = distance+3;
-			self.knobViewLeadingConstraint.constant = distance - 3;
+			self.elapsedTrackWidthConstraint.constant = distance + 3;
+			self.knobViewLeadingConstraint.constant = distance;
 		} else {
-			self.elapsedTime = distance / 297 * self.duration;
+			self.elapsedTime = distance / 293 * self.duration;
 		}
 
 		[sender setTranslation:CGPointZero inView:self];
@@ -166,8 +169,8 @@
 
 		if (self.duration > 0) {
 			double distance = self.knobViewLeadingConstraint.constant;
-			double elapsedTime = distance / 297 * self.duration;
-			MRMediaRemoteSetElapsedTime(elapsedTime + 2);
+			double elapsedTime = distance / 293 * self.duration;
+			MRMediaRemoteSetElapsedTime(elapsedTime);
 			[self startTimer];
 		}
 	}
