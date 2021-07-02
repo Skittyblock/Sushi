@@ -7,28 +7,45 @@
 	self = [super init];
 
 	if (self) {
-		self.remainingTrack = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 300, 3)];
+		self.userInteractionEnabled = YES;
+
+		self.remainingTrack = [[UIView alloc] init];
 		self.remainingTrack.layer.cornerRadius = 2;
 		self.remainingTrack.backgroundColor = [UIColor colorWithWhite:0.8 alpha:1];
+		self.remainingTrack.translatesAutoresizingMaskIntoConstraints = NO;
 		[self addSubview:self.remainingTrack];
 
-		self.elapsedTrack = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 5, 3)];
+		self.elapsedTrack = [[UIView alloc] init];
 		self.elapsedTrack.layer.cornerRadius = 2;
 		self.elapsedTrack.backgroundColor = [UIColor blackColor];
+		self.elapsedTrack.translatesAutoresizingMaskIntoConstraints = NO;
 		[self addSubview:self.elapsedTrack];
 
-		self.elapsedLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 11, 40, 12)];
+		self.knobView = [[SUNowPlayingProgressKnobView alloc] init];
+		self.knobView.translatesAutoresizingMaskIntoConstraints = NO;
+		[self addSubview:self.knobView];
+
+		self.elapsedLabel = [[UILabel alloc] init];
 		self.elapsedLabel.textColor = [UIColor blackColor];
 		self.elapsedLabel.font = [UIFont boldSystemFontOfSize:13];
 		self.elapsedLabel.text = @"0:00";
+		self.elapsedLabel.translatesAutoresizingMaskIntoConstraints = NO;
 		[self addSubview:self.elapsedLabel];
 
-		self.remainingLabel = [[UILabel alloc] initWithFrame:CGRectMake(260, 11, 40, 12)];
+		self.remainingLabel = [[UILabel alloc] init];
 		self.remainingLabel.textColor = [UIColor lightGrayColor];
 		self.remainingLabel.font = [UIFont boldSystemFontOfSize:13];
 		self.remainingLabel.textAlignment = NSTextAlignmentRight;
 		self.remainingLabel.text = @"0:00";
+		self.remainingLabel.translatesAutoresizingMaskIntoConstraints = NO;
 		[self addSubview:self.remainingLabel];
+
+		UIPanGestureRecognizer *scrubRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(scrubbed:)];
+		[scrubRecognizer setMinimumNumberOfTouches:1];
+		[scrubRecognizer setMaximumNumberOfTouches:1];
+		[self.knobView addGestureRecognizer:scrubRecognizer];
+
+		[self activateConstraints];
 
 		self.duration = 0;
 		self.elapsedTime = 0;
@@ -37,29 +54,33 @@
 	return self;
 }
 
-- (void)setDuration:(double)duration {
-	_duration = duration;
+- (void)activateConstraints {
+	[self.remainingTrack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
+	[self.remainingTrack.topAnchor constraintEqualToAnchor:self.topAnchor constant:5].active = YES;
+	[self.remainingTrack.widthAnchor constraintEqualToConstant:300].active = YES;
+	[self.remainingTrack.heightAnchor constraintEqualToConstant:3].active = YES;
 
-	if (!duration || duration < 0) duration = 0;
+	[self.elapsedTrack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
+	[self.elapsedTrack.topAnchor constraintEqualToAnchor:self.topAnchor constant:5].active = YES;
+	self.elapsedTrackWidthConstraint = [self.elapsedTrack.widthAnchor constraintEqualToConstant:3];
+	self.elapsedTrackWidthConstraint.active = YES;
+	[self.elapsedTrack.heightAnchor constraintEqualToConstant:3].active = YES;
 
-	NSUInteger m = ((NSUInteger)floor(duration) / 60);
-	NSUInteger s = (NSUInteger)floor(duration) % 60;
+	self.knobViewLeadingConstraint = [self.knobView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:-3];
+	self.knobViewLeadingConstraint.active = YES;
+	[self.knobView.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
+	[self.knobView.widthAnchor constraintEqualToConstant:13].active = YES;
+	[self.knobView.heightAnchor constraintEqualToConstant:13].active = YES;
 
-	self.remainingLabel.text = [NSString stringWithFormat:@"%lu:%02lu", m, s];
-}
+	[self.elapsedLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
+	[self.elapsedLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:16].active = YES;
+	[self.elapsedLabel.widthAnchor constraintEqualToConstant:50].active = YES;
+	[self.elapsedLabel.heightAnchor constraintEqualToConstant:12].active = YES;
 
-- (void)setElapsedTime:(double)elapsed {
-	_elapsedTime = elapsed;
-
-	if (!elapsed || elapsed < 0) elapsed = 0;
-
-	NSUInteger m = ((NSUInteger)floor(elapsed) / 60);
-	NSUInteger s = (NSUInteger)floor(elapsed) % 60;
-
-	CGFloat width = (self.duration > 0 ? (elapsed/(self.duration))*297 : 0) + 3;
-
-	self.elapsedTrack.frame = CGRectMake(0, 0, width, 3);
-	self.elapsedLabel.text = [NSString stringWithFormat:@"%lu:%02lu", m, s];
+	[self.remainingLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
+	[self.remainingLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:16].active = YES;
+	[self.remainingLabel.widthAnchor constraintEqualToConstant:50].active = YES;
+	[self.remainingLabel.heightAnchor constraintEqualToConstant:12].active = YES;
 }
 
 - (void)startTimer {
@@ -80,6 +101,80 @@
 
 		self.elapsedTime = realTimeElapsed;
 	});
+}
+
+- (void)setDuration:(double)duration {
+	_duration = duration;
+
+	if (!duration || duration < 0) duration = 0;
+
+	NSUInteger m = ((NSUInteger)floor(duration) / 60);
+	NSUInteger s = (NSUInteger)floor(duration) % 60;
+
+	self.remainingLabel.text = [NSString stringWithFormat:@"%lu:%02lu", m, s];
+}
+
+- (void)setElapsedTime:(double)elapsed {
+	if (elapsed > self.duration) return;
+
+	_elapsedTime = elapsed;
+
+	if (!elapsed || elapsed < 0) elapsed = 0;
+
+	NSUInteger m = ((NSUInteger)floor(elapsed) / 60);
+	NSUInteger s = (NSUInteger)floor(elapsed) % 60;
+
+	CGFloat width = (self.duration > 0 ? (elapsed/(self.duration))*297 : 0) + 3;
+
+	self.elapsedTrackWidthConstraint.constant = width;
+	self.knobViewLeadingConstraint.constant = width-6;
+	self.elapsedLabel.text = [NSString stringWithFormat:@"%lu:%02lu", m, s];
+}
+
+- (void)tapped:(UILongPressGestureRecognizer *)sender {
+	if (sender.state == UIGestureRecognizerStateBegan) {
+		[UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+			self.knobView.transform = CGAffineTransformMakeScale(3, 3);
+		} completion:nil];
+	} else if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
+		[UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+			self.knobView.transform = CGAffineTransformMakeScale(1, 1);
+		} completion:nil];
+	}
+}
+
+- (void)scrubbed:(UIPanGestureRecognizer *)sender {
+	if (sender.state == UIGestureRecognizerStateBegan) {
+		[self stopTimer];
+	} else if (sender.state == UIGestureRecognizerStateChanged) {
+		CGFloat distance = self.knobViewLeadingConstraint.constant+3 + [sender translationInView:self].x;
+		if (distance < 0) distance = 0;
+		else if (distance > 297) distance = 297;
+
+		if (self.duration <= 0) {
+			self.elapsedTrackWidthConstraint.constant = distance+3;
+			self.knobViewLeadingConstraint.constant = distance - 3;
+		} else {
+			self.elapsedTime = distance / 297 * self.duration;
+		}
+
+		[sender setTranslation:CGPointZero inView:self];
+	} else if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
+		[UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+			self.knobView.transform = CGAffineTransformMakeScale(1, 1);
+		} completion:nil];
+
+		if (self.duration > 0) {
+			double distance = self.knobViewLeadingConstraint.constant;
+			double elapsedTime = distance / 297 * self.duration;
+			MRMediaRemoteSetElapsedTime(elapsedTime + 2);
+			[self startTimer];
+		}
+	}
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+	return;
 }
 
 @end

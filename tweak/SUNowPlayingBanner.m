@@ -105,9 +105,9 @@
 	[self.glyphView.heightAnchor constraintEqualToConstant:19].active = YES;
 
 	[self.progressView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor].active = YES;
-	[self.progressView.topAnchor constraintEqualToAnchor:self.topAnchor constant:85].active = YES;
+	[self.progressView.topAnchor constraintEqualToAnchor:self.topAnchor constant:80].active = YES;
 	[self.progressView.widthAnchor constraintEqualToConstant:300].active = YES;
-	[self.progressView.heightAnchor constraintEqualToConstant:18].active = YES;
+	[self.progressView.heightAnchor constraintEqualToConstant:28].active = YES;
 
 	[self.musicControlsView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor].active = YES;
 	[self.musicControlsView.topAnchor constraintEqualToAnchor:self.topAnchor constant:106].active = YES;
@@ -190,6 +190,7 @@
 		self.musicControlsView.nextButton.tintColor = [UIColor labelColor];
 		self.progressView.elapsedTrack.backgroundColor = [UIColor labelColor];
 		self.progressView.remainingTrack.backgroundColor = [UIColor sushiSecondaryLabelColor];
+		self.progressView.knobView.knob.backgroundColor = [UIColor labelColor];
 		self.progressView.elapsedLabel.textColor = [UIColor labelColor];
 		self.progressView.remainingLabel.textColor = [UIColor sushiSecondaryLabelColor];
 	} else if (self.darkMode) {
@@ -204,6 +205,7 @@
 		self.musicControlsView.nextButton.tintColor = [UIColor whiteColor];
 		self.progressView.elapsedTrack.backgroundColor = [UIColor whiteColor];
 		self.progressView.remainingTrack.backgroundColor = [UIColor darkSushiSecondaryLabelColor];
+		self.progressView.knobView.knob.backgroundColor = [UIColor whiteColor];
 		self.progressView.elapsedLabel.textColor = [UIColor whiteColor];
 		self.progressView.remainingLabel.textColor = [UIColor darkSushiSecondaryLabelColor];
 	} else {
@@ -217,6 +219,7 @@
 		self.musicControlsView.nextButton.tintColor = [UIColor blackColor];
 		self.progressView.elapsedTrack.backgroundColor = [UIColor blackColor];
 		self.progressView.remainingTrack.backgroundColor = [UIColor lightSushiSecondaryLabelColor];
+		self.progressView.knobView.knob.backgroundColor = [UIColor blackColor];
 		self.progressView.elapsedLabel.textColor = [UIColor blackColor];
 		self.progressView.remainingLabel.textColor = [UIColor lightSushiSecondaryLabelColor];
 	}
