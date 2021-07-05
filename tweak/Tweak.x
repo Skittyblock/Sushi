@@ -8,6 +8,8 @@
 #import "SBApplication.h"
 #import "SBApplicationController.h"
 #import "SBLockScreenManager.h"
+#import "SpringBoard+Sushi.h"
+#import "SUActiveOrientationManager.h"
 
 #define BUNDLE_ID @"xyz.skitty.sushi"
 
@@ -58,16 +60,20 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 
 // Create now playing window
 %hook SpringBoard
+%property (nonatomic, retain) SUActiveOrientationManager *sushiOrientationManager;
 %property (nonatomic, retain) SUWindow *sushiWindow;
 
 - (void)applicationDidFinishLaunching:(id)arg1 {
 	%orig;
 
+	self.sushiOrientationManager = [[SUActiveOrientationManager alloc] init];
+	[self addActiveOrientationObserver:self.sushiOrientationManager];
+
 	nowPlayingControllerInstance = [[SUNowPlayingViewController alloc] init];
 	nowPlayingControllerInstance.shouldPlayFeedback = YES;
 	refreshPrefs();
 
-	self.sushiWindow = [[SUWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+	self.sushiWindow = [[%c(SUWindow) alloc] initWithScreen:[UIScreen mainScreen] debugName:@"SushiWindow"];
 	self.sushiWindow.rootViewController = nowPlayingControllerInstance;
 	self.sushiWindow.windowLevel = UIWindowLevelStatusBar + 100.0;
 	self.sushiWindow.enabled = enabled;

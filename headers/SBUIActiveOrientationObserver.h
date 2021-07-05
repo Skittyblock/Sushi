@@ -1,0 +1,5 @@
+@protocol SBUIActiveOrientationObserver <NSObject>
+@required
+- (void)activeInterfaceOrientationWillChangeToOrientation:(UIInterfaceOrientation)orientation;
+- (void)activeInterfaceOrientationDidChangeToOrientation:(UIInterfaceOrientation)orientation willAnimateWithDuration:(NSTimeInterval)duration fromOrientation:(UIInterfaceOrientation)previousOrientation;
+@end

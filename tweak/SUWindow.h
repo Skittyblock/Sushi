@@ -1,6 +1,7 @@
 #import <UIKit/UIKit.h>
+#import "SBSecureWindow.h"
 
-@interface SUWindow : UIWindow
+@interface SUWindow : SBSecureWindow
 
 @property (nonatomic, assign) BOOL enabled;
 
