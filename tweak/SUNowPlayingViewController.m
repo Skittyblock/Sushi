@@ -1,5 +1,7 @@
 #import "SUNowPlayingViewController.h"
 #import <MediaRemote/MediaRemote.h>
+#import "SUNowPlayingManager.h"
+#import "SUNowPlayingWindow.h"
 #import "UIImage+Private.h"
 #import "UIStatusBar.h"
 
@@ -46,8 +48,6 @@
 		self.bannerWidthConstraint.active = YES;
 		self.bannerHeightConstraint.active = YES;
 
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(nowPlayingUpdate:) name:@"xyz.skitty.sushi.songchange" object:nil];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appPlayingUpdate:) name:@"xyz.skitty.sushi.appchange" object:nil];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(expansionChanged:) name:@"xyz.skitty.sushi.expanded" object:nil];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sendTestBanner) name:@"xyz.skitty.sushi.test" object:nil];
 	}
@@ -55,15 +55,15 @@
 	return self;
 }
 
-- (void)nowPlayingUpdate:(NSNotification *)notification {
+- (void)nowPlayingUpdate:(NSDictionary *)info {
 	self.lastTouchedDate = [NSDate date];
 
-	NSString *title = [notification.userInfo objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoTitle];
-	NSString *artist = [notification.userInfo objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtist];
-	NSData *artworkData = [notification.userInfo objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtworkData];
-	NSNumber *elapsed = [notification.userInfo objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoElapsedTime];
-	NSNumber *duration = [notification.userInfo objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoDuration];
-	NSNumber *playbackRate = [notification.userInfo objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoPlaybackRate];
+	NSString *title = [info objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoTitle];
+	NSString *artist = [info objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtist];
+	NSData *artworkData = [info objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtworkData];
+	NSNumber *elapsed = [info objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoElapsedTime];
+	NSNumber *duration = [info objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoDuration];
+	NSNumber *playbackRate = [info objectForKey:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoPlaybackRate];
 
 	if ([playbackRate isEqual:@(1)]) {
 		self.bannerView.musicControlsView.paused = NO;
@@ -81,9 +81,9 @@
 		self.currentTitle = title;
 		self.currentArtist = artist;
 
-		if ([notification.userInfo[@"enabledInApp"] isEqual:@(0)] && notification.userInfo[@"currentApplication"] == self.nowPlayingApp) return;
-		if ([(NSArray *)notification.userInfo[@"blacklistedApps"] containsObject:self.nowPlayingApp]) return;
-		if ([notification.userInfo[@"locked"] isEqual:@(1)]) return;
+		if ([info[@"enabledInApp"] isEqual:@(0)] && info[@"currentApplication"] == self.nowPlayingApp) return;
+		if ([(NSArray *)info[@"blacklistedApps"] containsObject:self.nowPlayingApp]) return;
+		if ([info[@"locked"] isEqual:@(1)]) return;
 
 		if (self.previousNowPlayingApp) {
 			self.nowPlayingApp = self.previousNowPlayingApp;
@@ -128,8 +128,7 @@
 	}
 }
 
-- (void)appPlayingUpdate:(NSNotification *)notification {
-	NSString *bundleIdentifier = notification.userInfo[@"id"];
+- (void)appPlayingUpdate:(NSString *)bundleIdentifier {
 	if (bundleIdentifier) {
 		self.bannerView.applicationIcon = [UIImage _applicationIconImageForBundleIdentifier:bundleIdentifier format:2];
 		self.nowPlayingApp = bundleIdentifier;
@@ -137,12 +136,13 @@
 }
 
 - (void)animateInAfter:(NSTimeInterval)seconds {
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"xyz.skitty.sushi.shown" object:nil userInfo:nil];
+	[self.window.manager showWindow];
+	self.bannerView.userInteractionEnabled = YES;
 	self.bannerView.transform = CGAffineTransformIdentity;
+
 	CGFloat offset = -(self.bannerOffset + self.bannerHeightConstraint.constant / 2);
 	if (self.location == 1) offset = [UIScreen mainScreen].bounds.size.height - offset;
 	[self.bannerView setCenter:CGPointMake(self.bannerView.center.x, offset)];
-	self.bannerView.userInteractionEnabled = YES;
 
 	[self.bannerView updateColors];
 
@@ -175,7 +175,7 @@
 		self.bannerView.expanded = NO;
 		self.bannerView.userInteractionEnabled = YES;
 		self.bannerView.transform = CGAffineTransformIdentity;
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"xyz.skitty.sushi.hidden" object:nil userInfo:nil];
+		[self.window.manager hideWindow];
 	}];
 }
 
@@ -263,7 +263,7 @@
 	self.testingBanner = YES;
 	self.currentTitle = @"Old Title";
 	self.currentArtist = @"Old Artist";
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"xyz.skitty.sushi.songchange" object:nil userInfo:fakeMusicInfo];
+	[self nowPlayingUpdate:fakeMusicInfo];
 }
 
 - (void)setNowPlayingApp:(NSString *)nowPlayingApp {

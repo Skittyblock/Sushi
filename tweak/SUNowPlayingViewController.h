@@ -1,7 +1,11 @@
 #import <UIKit/UIKit.h>
 #import "SUNowPlayingBanner.h"
 
+@class SUNowPlayingWindow;
+
 @interface SUNowPlayingViewController : UIViewController
+
+@property (nonatomic, assign) SUNowPlayingWindow *window;
 
 @property (nonatomic, strong) SUNowPlayingBanner *bannerView;
 
@@ -29,5 +33,8 @@
 - (void)animateInAfter:(NSTimeInterval)seconds;
 - (void)animateIn;
 - (void)animateOut;
+
+- (void)nowPlayingUpdate:(NSDictionary *)info;
+- (void)appPlayingUpdate:(NSString *)bundleIdentifier;
 
 @end

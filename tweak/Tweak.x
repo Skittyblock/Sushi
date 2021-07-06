@@ -2,20 +2,17 @@
 // Now playing banner with integrated media controls
 
 #import <MediaRemote/MediaRemote.h>
-#import "SUWindow.h"
+#import "SUNowPlayingManager.h"
+#import "SUNowPlayingWindow.h"
 #import "SUNowPlayingViewController.h"
-#import "SpringBoard+SUWindow.h"
 #import "SBApplication.h"
 #import "SBApplicationController.h"
 #import "SBLockScreenManager.h"
 #import "SpringBoard+Sushi.h"
-#import "SUActiveOrientationManager.h"
 
 #define BUNDLE_ID @"xyz.skitty.sushi"
 
 CFNotificationCenterRef CFNotificationCenterGetDistributedCenter(void);
-
-static SUNowPlayingViewController *nowPlayingControllerInstance;
 
 static NSDictionary *settings;
 static NSArray *systemIdentifiers;
@@ -40,18 +37,18 @@ static void refreshPrefs() {
 
 	enabled = [([settings objectForKey:@"enabled"] ?: @(YES)) boolValue];
 	enabledInApp = [([settings objectForKey:@"enabledInApp"] ?: @(NO)) boolValue];
-	nowPlayingControllerInstance.location = [([settings objectForKey:@"location"] ?: @(0)) intValue];
-	nowPlayingControllerInstance.dismissWhenExpanded = [([settings objectForKey:@"dismissWhenExpanded"] ?: @(NO)) boolValue];
-	nowPlayingControllerInstance.bannerView.matchSystemTheme = [([settings objectForKey:@"matchSystemTheme"] ?: @(YES)) boolValue];
-	nowPlayingControllerInstance.bannerView.darkMode = [([settings objectForKey:@"darkMode"] ?: @(YES)) boolValue];
-	nowPlayingControllerInstance.bannerView.oled = [([settings objectForKey:@"oled"] ?: @(NO)) boolValue];
-	nowPlayingControllerInstance.bannerView.blurred = [([settings objectForKey:@"blurred"] ?: @(NO)) boolValue];
-	nowPlayingControllerInstance.bannerView.blurThickness = [([settings objectForKey:@"blurThickness"] ?: @(1)) intValue];
-	nowPlayingControllerInstance.bannerView.tintStrength = [([settings objectForKey:@"tint"] ?: @(NO)) boolValue] ? [([settings objectForKey:@"tintStrength"] ?: @(0.3)) floatValue] : 0;
-	[nowPlayingControllerInstance.bannerView updateColors];
+	[SUNowPlayingManager sharedManager].window.rootViewController.location = [([settings objectForKey:@"location"] ?: @(0)) intValue];
+	[SUNowPlayingManager sharedManager].window.rootViewController.dismissWhenExpanded = [([settings objectForKey:@"dismissWhenExpanded"] ?: @(NO)) boolValue];
+	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.matchSystemTheme = [([settings objectForKey:@"matchSystemTheme"] ?: @(YES)) boolValue];
+	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.darkMode = [([settings objectForKey:@"darkMode"] ?: @(YES)) boolValue];
+	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.oled = [([settings objectForKey:@"oled"] ?: @(NO)) boolValue];
+	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.blurred = [([settings objectForKey:@"blurred"] ?: @(NO)) boolValue];
+	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.blurThickness = [([settings objectForKey:@"blurThickness"] ?: @(1)) intValue];
+	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.tintStrength = [([settings objectForKey:@"tint"] ?: @(NO)) boolValue] ? [([settings objectForKey:@"tintStrength"] ?: @(0.3)) floatValue] : 0;
+	[[SUNowPlayingManager sharedManager].window.rootViewController.bannerView updateColors];
 
 	BOOL customDismissInterval = [([settings objectForKey:@"customDismissInterval"] ?: @(NO)) boolValue];
-	nowPlayingControllerInstance.dismissInterval = customDismissInterval ? [([settings objectForKey:@"dismissInterval"] ?: @(3)) intValue] : 3;
+	[SUNowPlayingManager sharedManager].window.rootViewController.dismissInterval = customDismissInterval ? [([settings objectForKey:@"dismissInterval"] ?: @(3)) intValue] : 3;
 }
 
 static void PreferencesChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
@@ -60,23 +57,21 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 
 // Create now playing window
 %hook SpringBoard
-%property (nonatomic, retain) SUActiveOrientationManager *sushiOrientationManager;
-%property (nonatomic, retain) SUWindow *sushiWindow;
+%property (nonatomic, retain) SUNowPlayingManager *sushiManager;
 
 - (void)applicationDidFinishLaunching:(id)arg1 {
 	%orig;
 
-	self.sushiOrientationManager = [[SUActiveOrientationManager alloc] init];
-	[self addActiveOrientationObserver:self.sushiOrientationManager];
+	self.sushiManager = [SUNowPlayingManager sharedManager];
+	self.sushiManager.enabled = enabled;
+	self.sushiManager.window = [[%c(SUNowPlayingWindow) alloc] initWithScreen:[UIScreen mainScreen] debugName:@"SushiWindow"];
+	self.sushiManager.window.hsRotation = [self homeScreenSupportsRotation];
+	self.sushiManager.window.rootViewController = [[SUNowPlayingViewController alloc] init];
+	self.sushiManager.window.rootViewController.shouldPlayFeedback = YES;
 
-	nowPlayingControllerInstance = [[SUNowPlayingViewController alloc] init];
-	nowPlayingControllerInstance.shouldPlayFeedback = YES;
+	[self addActiveOrientationObserver:self.sushiManager];
+
 	refreshPrefs();
-
-	self.sushiWindow = [[%c(SUWindow) alloc] initWithScreen:[UIScreen mainScreen] debugName:@"SushiWindow"];
-	self.sushiWindow.rootViewController = nowPlayingControllerInstance;
-	self.sushiWindow.windowLevel = UIWindowLevelStatusBar + 100.0;
-	self.sushiWindow.enabled = enabled;
 }
 
 %end
@@ -87,7 +82,7 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 
 - (void)_setNowPlayingApplication:(SBApplication *)app {
 	%orig;
-	if (app) [[NSNotificationCenter defaultCenter] postNotificationName:@"xyz.skitty.sushi.appchange" object:nil userInfo:@{ @"id": app.bundleIdentifier }];
+	if (app) [[SUNowPlayingManager sharedManager].window.rootViewController appPlayingUpdate:app.bundleIdentifier];
 }
 
 - (void)setNowPlayingInfo:(id)info {
@@ -99,7 +94,7 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 		userInfo[@"locked"] = @([[%c(SBLockScreenManager) sharedInstance] isUILocked]);
 		userInfo[@"enabledInApp"] = @(enabledInApp);
 		userInfo[@"blacklistedApps"] = blacklistedApps();
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"xyz.skitty.sushi.songchange" object:nil userInfo:userInfo];
+		[[SUNowPlayingManager sharedManager].window.rootViewController nowPlayingUpdate:userInfo];
 	});	
 }
 
@@ -110,7 +105,7 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 
 - (void)singlePress:(id)arg1 {
 	%orig;
-	[nowPlayingControllerInstance animateOut];
+	[[SUNowPlayingManager sharedManager].window.rootViewController animateOut];
 }
 
 %end
@@ -119,7 +114,7 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 %hook SBReachabilityManager
 
 - (void)toggleReachability {
-	if (((SUWindow *)nowPlayingControllerInstance.view.superview).enabled == YES && nowPlayingControllerInstance.view.superview.hidden == NO && nowPlayingControllerInstance.location == 1) return;
+	if ([SUNowPlayingManager sharedManager].enabled == YES && [SUNowPlayingManager sharedManager].window.hidden == NO && [SUNowPlayingManager sharedManager].window.rootViewController.location == 1) return;
 	%orig;
 }
 
