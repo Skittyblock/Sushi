@@ -4,7 +4,6 @@
 
 %subclass SUNowPlayingWindow : SBSecureWindow
 %property (nonatomic, retain) SUNowPlayingManager *manager;
-%property (nonatomic, assign) BOOL hsRotation;
 
 -  (instancetype)initWithScreen:(UIScreen *)screen debugName:(NSString *)name {
 	self = %orig;

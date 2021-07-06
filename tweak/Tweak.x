@@ -37,6 +37,7 @@ static void refreshPrefs() {
 
 	enabled = [([settings objectForKey:@"enabled"] ?: @(YES)) boolValue];
 	enabledInApp = [([settings objectForKey:@"enabledInApp"] ?: @(NO)) boolValue];
+	[SUNowPlayingManager sharedManager].window.rootViewController.shouldPlayFeedback = YES;
 	[SUNowPlayingManager sharedManager].window.rootViewController.location = [([settings objectForKey:@"location"] ?: @(0)) intValue];
 	[SUNowPlayingManager sharedManager].window.rootViewController.dismissWhenExpanded = [([settings objectForKey:@"dismissWhenExpanded"] ?: @(NO)) boolValue];
 	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.matchSystemTheme = [([settings objectForKey:@"matchSystemTheme"] ?: @(YES)) boolValue];
@@ -65,9 +66,7 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 	self.sushiManager = [SUNowPlayingManager sharedManager];
 	self.sushiManager.enabled = enabled;
 	self.sushiManager.window = [[%c(SUNowPlayingWindow) alloc] initWithScreen:[UIScreen mainScreen] debugName:@"SushiWindow"];
-	self.sushiManager.window.hsRotation = [self homeScreenSupportsRotation];
 	self.sushiManager.window.rootViewController = [[SUNowPlayingViewController alloc] init];
-	self.sushiManager.window.rootViewController.shouldPlayFeedback = YES;
 
 	[self addActiveOrientationObserver:self.sushiManager];
 
