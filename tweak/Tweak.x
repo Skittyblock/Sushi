@@ -65,7 +65,11 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 
 	self.sushiManager = [SUNowPlayingManager sharedManager];
 	self.sushiManager.enabled = enabled;
-	self.sushiManager.window = [[%c(SUNowPlayingWindow) alloc] initWithScreen:[UIScreen mainScreen] debugName:@"SushiWindow"];
+	if (@available(iOS 15.0, *)) {
+		self.sushiManager.window = [[%c(SUNowPlayingWindow) alloc] initWithScreen:[UIScreen mainScreen] role:nil debugName:@"SushiWindow"];
+	} else {
+		self.sushiManager.window = [[%c(SUNowPlayingWindow) alloc] initWithScreen:[UIScreen mainScreen] debugName:@"SushiWindow"];
+	}
 	self.sushiManager.window.rootViewController = [[SUNowPlayingViewController alloc] init];
 
 	[self addActiveOrientationObserver:self.sushiManager];

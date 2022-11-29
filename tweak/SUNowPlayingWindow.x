@@ -5,7 +5,20 @@
 %subclass SUNowPlayingWindow : SBSecureWindow
 %property (nonatomic, retain) SUNowPlayingManager *manager;
 
+// iOS 13-14
 -  (instancetype)initWithScreen:(UIScreen *)screen debugName:(NSString *)name {
+	self = %orig;
+
+	if (self) {
+		self.hidden = YES;
+		self.windowLevel = UIWindowLevelStatusBar + 100.0;
+	}
+
+	return self;
+}
+
+// iOS 15
+- (instancetype)initWithScreen:(UIScreen *)screen role:(id)role debugName:(NSString *)name {
 	self = %orig;
 
 	if (self) {
