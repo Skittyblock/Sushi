@@ -6,22 +6,32 @@
 #import "UIColor+SushiColors.h"
 #import <rootless.h>
 
+#define CORNER_RADIUS 10
+#define EXPANDED_RADIUS 12
+#define NOTCHED_EXPANDED_RADIUS 18
+
+#define SHADOW_OPACITY 0.15
+#define DARK_SHADOW_OPACITY 0.4
+
 @implementation SUNowPlayingBanner
 
-- (instancetype)init {
+- (instancetype)initWithNotchedLayout:(BOOL)notchedLayout {
 	self = [super init];
 
 	if (self) {
 		self.expanded = NO;
-		self.layer.cornerRadius = 10;
+		self.useNotchedLayout = notchedLayout;
+		self.layer.cornerRadius = CORNER_RADIUS;
+		self.layer.cornerCurve = kCACornerCurveContinuous;
 		self.layer.shadowColor = [UIColor blackColor].CGColor;
-		self.layer.shadowOpacity = 0.15;
+		self.layer.shadowOpacity = SHADOW_OPACITY;
 		self.layer.shadowRadius = 10;
 		self.layer.shadowOffset = CGSizeMake(0, 5);
 
 		// Content view (for bounds clipping)
 		self.contentView = [[UIView alloc] init];
-		self.contentView.layer.cornerRadius = 10;
+		self.contentView.layer.cornerRadius = self.layer.cornerRadius;
+		self.contentView.layer.cornerCurve = kCACornerCurveContinuous;
 		self.contentView.clipsToBounds = YES;
 		self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
 		[self addSubview:self.contentView];
@@ -89,32 +99,6 @@
 }
 
 - (void)activateConstraints {
-	[self.tintView.widthAnchor constraintEqualToAnchor:self.widthAnchor].active = YES;
-	[self.tintView.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
-
-	[self.visualEffectView.widthAnchor constraintEqualToAnchor:self.widthAnchor].active = YES;
-	[self.visualEffectView.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
-
-	[self.contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
-	[self.contentView.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-	[self.contentView.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
-	[self.contentView.widthAnchor constraintEqualToAnchor:self.widthAnchor].active = YES;
-
-	[self.glyphView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-23].active = YES;
-	[self.glyphView.topAnchor constraintEqualToAnchor:self.topAnchor constant:21].active = YES;
-	[self.glyphView.widthAnchor constraintEqualToConstant:17].active = YES;
-	[self.glyphView.heightAnchor constraintEqualToConstant:19].active = YES;
-
-	[self.progressView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor].active = YES;
-	[self.progressView.topAnchor constraintEqualToAnchor:self.topAnchor constant:77].active = YES;
-	[self.progressView.widthAnchor constraintEqualToConstant:312].active = YES;
-	[self.progressView.heightAnchor constraintEqualToConstant:31].active = YES;
-
-	[self.musicControlsView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor].active = YES;
-	[self.musicControlsView.topAnchor constraintEqualToAnchor:self.topAnchor constant:106].active = YES;
-	[self.musicControlsView.widthAnchor constraintEqualToConstant:180].active = YES;
-	[self.musicControlsView.heightAnchor constraintEqualToConstant:28].active = YES;
-
 	self.iconViewTopConstraint = [self.iconView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor];
 	self.iconViewLeadingConstraint = [self.iconView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10];
 	self.iconViewWidthConstraint = [self.iconView.widthAnchor constraintEqualToConstant:24];
@@ -131,18 +115,46 @@
 	self.messageWidthConstraint = [self.messageLabel.widthAnchor constraintLessThanOrEqualToConstant:121];
 	self.messageHeightConstraint = [self.messageLabel.heightAnchor constraintEqualToConstant:18];
 
-	self.iconViewTopConstraint.active = YES;
-	self.iconViewLeadingConstraint.active = YES;
-	self.iconViewWidthConstraint.active = YES;
-	self.iconViewHeightConstraint.active = YES;
-	self.titleTopConstraint.active = YES;
-	self.titleLeadingConstraint.active = YES;
-	self.titleWidthConstraint.active = YES;
-	self.titleHeightConstraint.active = YES;
-	self.messageTopConstraint.active = YES;
-	self.messageTrailingConstraint.active = YES;
-	self.messageWidthConstraint.active = YES;
-	self.messageHeightConstraint.active = YES;
+	[NSLayoutConstraint activateConstraints:@[
+		[self.tintView.widthAnchor constraintEqualToAnchor:self.widthAnchor],
+		[self.tintView.heightAnchor constraintEqualToAnchor:self.heightAnchor],
+
+		[self.visualEffectView.widthAnchor constraintEqualToAnchor:self.widthAnchor],
+		[self.visualEffectView.heightAnchor constraintEqualToAnchor:self.heightAnchor],
+
+		[self.contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+		[self.contentView.topAnchor constraintEqualToAnchor:self.topAnchor],
+		[self.contentView.heightAnchor constraintEqualToAnchor:self.heightAnchor],
+		[self.contentView.widthAnchor constraintEqualToAnchor:self.widthAnchor],
+
+		[self.glyphView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-23],
+		[self.glyphView.topAnchor constraintEqualToAnchor:self.topAnchor constant:21],
+		[self.glyphView.widthAnchor constraintEqualToConstant:17],
+		[self.glyphView.heightAnchor constraintEqualToConstant:19],
+
+		[self.progressView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+		[self.progressView.topAnchor constraintEqualToAnchor:self.topAnchor constant:77],
+		[self.progressView.widthAnchor constraintEqualToConstant:312],
+		[self.progressView.heightAnchor constraintEqualToConstant:31],
+
+		[self.musicControlsView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+		[self.musicControlsView.topAnchor constraintEqualToAnchor:self.topAnchor constant:106],
+		[self.musicControlsView.widthAnchor constraintEqualToConstant:180],
+		[self.musicControlsView.heightAnchor constraintEqualToConstant:28],
+
+		self.iconViewTopConstraint,
+		self.iconViewLeadingConstraint,
+		self.iconViewWidthConstraint,
+		self.iconViewHeightConstraint,
+		self.titleTopConstraint,
+		self.titleLeadingConstraint,
+		self.titleWidthConstraint,
+		self.titleHeightConstraint,
+		self.messageTopConstraint,
+		self.messageTrailingConstraint,
+		self.messageWidthConstraint,
+		self.messageHeightConstraint,
+	]];
 }
 
 - (UIBlurEffectStyle)getBlurStyleWithAppearance:(NSInteger)appearance thickness:(NSInteger)thickness {
@@ -179,7 +191,7 @@
 		self.backgroundColor = [UIColor clearColor];
 	}
 
-	if (self.darkMode && self.matchSystemTheme) {
+	if (self.matchSystemTheme) {
 		if (self.oled && !self.blurred) self.backgroundColor = [UIColor systemBackgroundColor];
 		else if (!self.blurred) self.backgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
 		else if (self.blurred) self.visualEffectView.effect = [UIBlurEffect effectWithStyle:[self getBlurStyleWithAppearance:0 thickness:self.blurThickness]];
@@ -194,6 +206,11 @@
 		self.progressView.knobView.knob.backgroundColor = [UIColor labelColor];
 		self.progressView.elapsedLabel.textColor = [UIColor labelColor];
 		self.progressView.remainingLabel.textColor = [UIColor sushiSecondaryLabelColor];
+		if (self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+			self.layer.shadowOpacity = DARK_SHADOW_OPACITY;
+		} else {
+			self.layer.shadowOpacity = SHADOW_OPACITY;
+		}
 	} else if (self.darkMode) {
 		if (self.oled && !self.blurred) self.backgroundColor = [UIColor blackColor];
 		else if (!self.blurred) self.backgroundColor = [UIColor colorWithRed:0.11 green:0.11 blue:0.12 alpha:1];
@@ -209,6 +226,7 @@
 		self.progressView.knobView.knob.backgroundColor = [UIColor whiteColor];
 		self.progressView.elapsedLabel.textColor = [UIColor whiteColor];
 		self.progressView.remainingLabel.textColor = [UIColor darkSushiSecondaryLabelColor];
+		self.layer.shadowOpacity = DARK_SHADOW_OPACITY;
 	} else {
 		if (!self.blurred) self.backgroundColor = [UIColor whiteColor];
 		else if (self.blurred) self.visualEffectView.effect = [UIBlurEffect effectWithStyle:[self getBlurStyleWithAppearance:2 thickness:self.blurThickness]];
@@ -223,6 +241,7 @@
 		self.progressView.knobView.knob.backgroundColor = [UIColor blackColor];
 		self.progressView.elapsedLabel.textColor = [UIColor blackColor];
 		self.progressView.remainingLabel.textColor = [UIColor lightSushiSecondaryLabelColor];
+		self.layer.shadowOpacity = SHADOW_OPACITY;
 	}
 }
 
@@ -242,8 +261,8 @@
 		
 		[UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
 			self.transform = CGAffineTransformMakeScale(1, 1);
-			self.layer.cornerRadius = 12;
-			self.contentView.layer.cornerRadius = 12;
+			self.layer.cornerRadius = self.useNotchedLayout ? NOTCHED_EXPANDED_RADIUS : EXPANDED_RADIUS;
+			self.contentView.layer.cornerRadius = self.layer.cornerRadius;
 
 			self.iconView.layer.cornerRadius = 5;
 			self.messageLabel.text = self.artist;
@@ -285,8 +304,8 @@
 		
 		[UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
 			self.transform = CGAffineTransformMakeScale(1, 1);
-			self.layer.cornerRadius = 10;
-			self.contentView.layer.cornerRadius = 10;
+			self.layer.cornerRadius = CORNER_RADIUS;
+			self.contentView.layer.cornerRadius = self.layer.cornerRadius;
 
 			self.iconView.layer.cornerRadius = 5.6;
 			self.messageLabel.text = [NSString stringWithFormat:@"by %@", self.artist];
@@ -366,6 +385,17 @@
 	_artist = artist;
 	if (!self.expanded) self.messageLabel.text = [NSString stringWithFormat:@"by %@", artist];
 	else self.messageLabel.text = artist;
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+	[super traitCollectionDidChange:previousTraitCollection];
+	if (self.matchSystemTheme) {
+		if (self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+			self.layer.shadowOpacity = DARK_SHADOW_OPACITY;
+		} else {
+			self.layer.shadowOpacity = SHADOW_OPACITY;
+		}
+	}
 }
 
 @end

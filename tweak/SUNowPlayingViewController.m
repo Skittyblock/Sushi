@@ -6,6 +6,10 @@
 #import "UIStatusBar.h"
 #import <rootless.h>
 
+#define BANNER_WIDTH 350 // maximum width for the banner
+#define EXPANDED_WIDTH 338 // width of the expanded view with controls
+#define EXPANDED_WIDTH_NOTCHED 350
+
 @implementation SUNowPlayingViewController
 
 - (instancetype)init {
@@ -23,8 +27,9 @@
 			if (statusBarHeight <= 0) statusBarHeight = [NSClassFromString(@"UIStatusBar_Modern") _heightForStyle:1 orientation:1 forStatusBarFrame:NO];
 		}
 		self.bannerOffset = statusBarHeight;
+		self.useNotchedLayout = statusBarHeight > 20;
 
-		self.bannerView = [[SUNowPlayingBanner alloc] init];
+		self.bannerView = [[SUNowPlayingBanner alloc] initWithNotchedLayout:self.useNotchedLayout];
 		self.bannerView.translatesAutoresizingMaskIntoConstraints = NO;
 		[self.view addSubview:self.bannerView];
 
@@ -39,9 +44,12 @@
 		[self.bannerView addGestureRecognizer:dragRecognizer];
 
 		self.bannerLeadingConstraint = [self.bannerView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor];
-		if (self.location == 0) self.bannerTopConstraint = [self.bannerView.topAnchor constraintEqualToAnchor:self.view.topAnchor constant:self.bannerOffset];
-		else self.bannerTopConstraint = [self.bannerView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:-self.bannerOffset];
-		self.bannerWidthConstraint = [self.bannerView.widthAnchor constraintLessThanOrEqualToConstant:350];
+		if (self.location == 0) {
+			self.bannerTopConstraint = [self.bannerView.topAnchor constraintEqualToAnchor:self.view.topAnchor constant:self.bannerOffset];
+		} else {
+			self.bannerTopConstraint = [self.bannerView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:-self.bannerOffset];
+		}
+		self.bannerWidthConstraint = [self.bannerView.widthAnchor constraintLessThanOrEqualToConstant:self.useNotchedLayout ? EXPANDED_WIDTH_NOTCHED : EXPANDED_WIDTH];
 		self.bannerHeightConstraint = [self.bannerView.heightAnchor constraintEqualToConstant:44];
 
 		self.bannerLeadingConstraint.active = YES;
@@ -237,12 +245,12 @@
 	NSNumber *expanded = notification.userInfo[@"expanded"];
 	if ([expanded isEqual:@(YES)]) {
 		self.bannerWidthConstraint.active = NO;
-		self.bannerWidthConstraint = [self.bannerView.widthAnchor constraintEqualToConstant:338];
+		self.bannerWidthConstraint = [self.bannerView.widthAnchor constraintEqualToConstant:self.useNotchedLayout ? EXPANDED_WIDTH_NOTCHED : EXPANDED_WIDTH];
 		self.bannerWidthConstraint.active = YES;
 		self.bannerHeightConstraint.constant = 152;
 	} else {
 		self.bannerWidthConstraint.active = NO;
-		self.bannerWidthConstraint = [self.bannerView.widthAnchor constraintLessThanOrEqualToConstant:350];
+		self.bannerWidthConstraint = [self.bannerView.widthAnchor constraintLessThanOrEqualToConstant:BANNER_WIDTH];
 		self.bannerWidthConstraint.active = YES;
 		self.bannerHeightConstraint.constant = 44;
 	}

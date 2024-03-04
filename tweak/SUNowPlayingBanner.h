@@ -5,6 +5,7 @@
 @interface SUNowPlayingBanner : UIView
 
 @property (nonatomic, assign) BOOL expanded;
+@property (nonatomic, assign) BOOL useNotchedLayout;
 
 @property (nonatomic, assign) BOOL blurred;
 @property (nonatomic, assign) BOOL matchSystemTheme;
@@ -52,6 +53,7 @@
 @property (nonatomic, weak) NSLayoutConstraint *messageHeightConstraint;
 @property (nonatomic, weak) NSLayoutConstraint *messageWidthConstraint;
 
+- (instancetype)initWithNotchedLayout:(BOOL)notchedLayout;
 - (void)updateColors;
 
 @end
