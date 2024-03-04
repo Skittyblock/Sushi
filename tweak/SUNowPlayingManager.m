@@ -22,7 +22,7 @@
 - (void)setWindow:(SUNowPlayingWindow *)window {
 	_window = window;
 	self.window.manager = self;
-	[self.window orientationDidChangeToOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
+	[self.window orientationDidChangeToOrientation:window.windowScene.interfaceOrientation];
 }
 
 - (void)activeInterfaceOrientationWillChangeToOrientation:(UIInterfaceOrientation)orientation {}

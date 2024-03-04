@@ -9,6 +9,7 @@
 #import "SBApplicationController.h"
 #import "SBLockScreenManager.h"
 #import "SpringBoard+Sushi.h"
+#import <rootless.h>
 
 #define BUNDLE_ID @"xyz.skitty.sushi"
 
@@ -32,7 +33,7 @@ static void refreshPrefs() {
 		settings = nil;
 	}
 	if (!settings) {
-		settings = [[NSMutableDictionary alloc] initWithContentsOfFile:[NSString stringWithFormat:@"/var/mobile/Library/Preferences/%@.plist", BUNDLE_ID]];
+		settings = [[NSMutableDictionary alloc] initWithContentsOfFile:[NSString stringWithFormat:ROOT_PATH_NS(@"/var/mobile/Library/Preferences/%@.plist"), BUNDLE_ID]];
 	}
 
 	enabled = [([settings objectForKey:@"enabled"] ?: @(YES)) boolValue];
@@ -65,7 +66,17 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 
 	self.sushiManager = [SUNowPlayingManager sharedManager];
 	self.sushiManager.enabled = enabled;
-	if (@available(iOS 15.0, *)) {
+	if (@available(iOS 16.0, *)) {
+		UIWindowScene *windowScene = nil;
+		for (UIScene *scene in self.connectedScenes) {
+			if ([scene isKindOfClass:[UIWindowScene class]]) {
+				windowScene = (UIWindowScene *)scene;
+				break;
+			}
+		}
+		if (!windowScene) return;
+		self.sushiManager.window = [[%c(SUNowPlayingWindow) alloc] initWithWindowScene:windowScene role:nil debugName:@"SushiWindow"];
+	} else if (@available(iOS 15.0, *)) {
 		self.sushiManager.window = [[%c(SUNowPlayingWindow) alloc] initWithScreen:[UIScreen mainScreen] role:nil debugName:@"SushiWindow"];
 	} else {
 		self.sushiManager.window = [[%c(SUNowPlayingWindow) alloc] initWithScreen:[UIScreen mainScreen] debugName:@"SushiWindow"];
@@ -154,7 +165,7 @@ static void getAppList(CFNotificationCenterRef center, void *observer, CFStringR
 
 static NSArray *blacklistedApps() {
 	NSArray *apps = @[];
-	NSString *prefPath = [NSString stringWithFormat:@"/var/mobile/Library/Preferences/%@.apps.plist", BUNDLE_ID];
+	NSString *prefPath = [NSString stringWithFormat:ROOT_PATH_NS(@"/var/mobile/Library/Preferences/%@.apps.plist"), BUNDLE_ID];
 
 	if ([[NSFileManager defaultManager] fileExistsAtPath:prefPath]) {
 		NSDictionary *appPrefs = [NSDictionary dictionaryWithContentsOfFile:prefPath];

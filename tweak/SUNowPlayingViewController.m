@@ -4,6 +4,7 @@
 #import "SUNowPlayingWindow.h"
 #import "UIImage+Private.h"
 #import "UIStatusBar.h"
+#import <rootless.h>
 
 @implementation SUNowPlayingViewController
 
@@ -255,7 +256,7 @@
 		@"blacklistedApps": @[],
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoTitle: @"Title",
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtist: @"Artist",
-		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtworkData: UIImagePNGRepresentation([UIImage imageWithContentsOfFile:@"/Library/Application Support/Sushi/MusicIcon.png"]),
+		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoArtworkData: UIImagePNGRepresentation([UIImage imageWithContentsOfFile:ROOT_PATH_NS(@"/Library/Application Support/Sushi/MusicIcon.png")]),
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoElapsedTime: @(0),
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoDuration: @(0),
 		(__bridge NSString *)kMRMediaRemoteNowPlayingInfoPlaybackRate: @(0)

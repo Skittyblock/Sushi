@@ -3,6 +3,7 @@
 
 #import "SkittyAppListViewController.h"
 #import "UIImage+Private.h"
+#import <rootless.h>
 
 #define BUNDLE_ID @"xyz.skitty.sushi"
 
@@ -36,14 +37,14 @@ static void post() {
 
 		[self getAppList];
 		
-		NSString *prefPath = [NSString stringWithFormat:@"/var/mobile/Library/Preferences/%@.apps.plist", BUNDLE_ID];
+		NSString *prefPath = [NSString stringWithFormat:ROOT_PATH_NS(@"/var/mobile/Library/Preferences/%@.apps.plist"), BUNDLE_ID];
 		NSMutableDictionary *prefs = [NSMutableDictionary dictionaryWithContentsOfFile:prefPath];
 		NSArray *apps = @[];
 		if ([[NSFileManager defaultManager] fileExistsAtPath:prefPath]) apps = [prefs objectForKey:@"Enabled"];
 		self.preferencesAppList = apps;
 		
 		self.searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
-		self.searchController.dimsBackgroundDuringPresentation = NO;
+		self.searchController.obscuresBackgroundDuringPresentation = NO;
 		self.searchController.delegate = self;
 		self.searchController.searchBar.delegate = self;
 		self.searchController.searchBar.placeholder = @"Search";
@@ -68,7 +69,7 @@ static void post() {
 
 // Preferences
 - (void)updatePreferencesAppList {
-	NSString *prefPath = [NSString stringWithFormat:@"/var/mobile/Library/Preferences/%@.apps.plist", BUNDLE_ID];
+	NSString *prefPath = [NSString stringWithFormat:ROOT_PATH_NS(@"/var/mobile/Library/Preferences/%@.apps.plist"), BUNDLE_ID];
 	NSDictionary *preferencesDict = @{ @"Enabled": self.preferencesAppList };
 	[preferencesDict writeToFile:prefPath atomically:YES];
 }

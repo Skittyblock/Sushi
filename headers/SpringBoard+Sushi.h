@@ -1,6 +1,6 @@
 @class SUNowPlayingManager, SBApplication;
 
-@interface SpringBoard
+@interface SpringBoard : UIApplication
 @property (nonatomic, retain) SUNowPlayingManager *sushiManager;
 - (void)addActiveOrientationObserver:(id)manager;
 - (BOOL)homeScreenSupportsRotation;

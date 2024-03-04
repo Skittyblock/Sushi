@@ -1,3 +1,5 @@
+TARGET = iphone:clang::12.0 # need to set lower deployment target for skittyprefs
+
 include $(THEOS)/makefiles/common.mk
 
 BUNDLE_NAME = Sushi

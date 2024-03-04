@@ -4,6 +4,7 @@
 #import "SBApplicationController.h"
 #import "UIImage+ColorArt.h"
 #import "UIColor+SushiColors.h"
+#import <rootless.h>
 
 @implementation SUNowPlayingBanner
 
@@ -63,7 +64,7 @@
 
 		// Music note glyph
 		self.glyphView = [[UIImageView alloc] init];
-		self.glyphView.image = [[UIImage imageWithContentsOfFile:@"/Library/Application Support/Sushi/MusicGlyph.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+		self.glyphView.image = [[UIImage imageWithContentsOfFile:ROOT_PATH_NS(@"/Library/Application Support/Sushi/MusicGlyph.png")] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 		self.glyphView.tintColor = [UIColor sushiSecondaryLabelColor];
 		self.glyphView.alpha = 0;
 		self.glyphView.translatesAutoresizingMaskIntoConstraints = NO;

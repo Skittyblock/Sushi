@@ -1,7 +1,5 @@
-export TARGET := iphone:clang::13.0
+export TARGET = iphone:clang::13.0
 export ARCHS = arm64 arm64e
-
-export ADDITIONAL_CFLAGS = -Wno-deprecated-declarations
 
 include $(THEOS)/makefiles/common.mk
 
