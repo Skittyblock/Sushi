@@ -15,12 +15,19 @@
 
 CFNotificationCenterRef CFNotificationCenterGetDistributedCenter(void);
 
+typedef void (^MRMediaRemoteGetNowPlayingClientBlock)(id client);
+void MRMediaRemoteGetNowPlayingClient(dispatch_queue_t queue, MRMediaRemoteGetNowPlayingClientBlock block);
+NSString *MRNowPlayingClientGetBundleIdentifier(id client);
+NSString *MRNowPlayingClientGetParentAppBundleIdentifier(id client);
+
 static NSDictionary *settings;
 static NSArray *systemIdentifiers;
 
 static BOOL enabled = YES;
 static BOOL enabledInApp = NO;
 
+static void updateNowPlayingApp();
+static void updateNowPlayingInfo();
 static NSArray *blacklistedApps();
 
 // Preference updates
@@ -84,14 +91,30 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 	self.sushiManager.window.rootViewController = [[SUNowPlayingViewController alloc] init];
 
 	[self addActiveOrientationObserver:self.sushiManager];
+	if (@available(iOS 16.0, *)) {
+    	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(nowPlayingAppDidChange) name:(__bridge NSString *)kMRMediaRemoteNowPlayingApplicationDidChangeNotification object:nil];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(nowPlayingInfoDidChange) name:(__bridge NSString *)kMRMediaRemoteNowPlayingInfoDidChangeNotification object:nil];
+	}
 
 	refreshPrefs();
+	updateNowPlayingApp();
+}
+
+%new
+- (void)nowPlayingAppDidChange {
+	updateNowPlayingApp();
+}
+
+%new
+- (void)nowPlayingInfoDidChange {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		updateNowPlayingInfo();
+	});
 }
 
 %end
 
 // Track now playing info changes
-// Could also probably use kMRMediaRemoteNowPlayingInfoDidChangeNotification instead
 %hook SBMediaController
 
 - (void)_setNowPlayingApplication:(SBApplication *)app {
@@ -101,15 +124,7 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 
 - (void)setNowPlayingInfo:(id)info {
 	%orig;
-
-	MRMediaRemoteGetNowPlayingInfo(dispatch_get_main_queue(), ^(CFDictionaryRef information) {
-		NSMutableDictionary *userInfo = [(__bridge NSDictionary *)information mutableCopy];
-		userInfo[@"currentApplication"] = [[(SpringBoard *)[UIApplication sharedApplication] _accessibilityFrontMostApplication] bundleIdentifier];
-		userInfo[@"locked"] = @([[%c(SBLockScreenManager) sharedInstance] isUILocked]);
-		userInfo[@"enabledInApp"] = @(enabledInApp);
-		userInfo[@"blacklistedApps"] = blacklistedApps();
-		[[SUNowPlayingManager sharedManager].window.rootViewController nowPlayingUpdate:userInfo];
-	});	
+	updateNowPlayingInfo();
 }
 
 %end
@@ -133,6 +148,31 @@ static void PreferencesChangedCallback(CFNotificationCenterRef center, void *obs
 }
 
 %end
+
+static void updateNowPlayingApp() {
+    MRMediaRemoteGetNowPlayingClient(dispatch_get_main_queue(), ^(id client) {
+		if (client != nil) {
+			NSString *bundleIdentifier = MRNowPlayingClientGetBundleIdentifier(client);
+			if (bundleIdentifier == nil) {
+				bundleIdentifier = MRNowPlayingClientGetParentAppBundleIdentifier(client);
+			}
+			if (bundleIdentifier != nil) {
+				[[SUNowPlayingManager sharedManager].window.rootViewController appPlayingUpdate:bundleIdentifier];
+			}
+		}
+	});
+}
+
+static void updateNowPlayingInfo() {
+	MRMediaRemoteGetNowPlayingInfo(dispatch_get_main_queue(), ^(CFDictionaryRef information) {
+		NSMutableDictionary *userInfo = [(__bridge NSDictionary *)information mutableCopy];
+		userInfo[@"currentApplication"] = [[(SpringBoard *)[UIApplication sharedApplication] _accessibilityFrontMostApplication] bundleIdentifier];
+		userInfo[@"locked"] = @([[%c(SBLockScreenManager) sharedInstance] isUILocked]);
+		userInfo[@"enabledInApp"] = @(enabledInApp);
+		userInfo[@"blacklistedApps"] = blacklistedApps();
+		[[SUNowPlayingManager sharedManager].window.rootViewController nowPlayingUpdate:userInfo];
+	});	
+}
 
 // App List
 static NSMutableDictionary *appList() {
