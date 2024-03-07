@@ -2,7 +2,6 @@
 #import <MediaRemote/MediaRemote.h>
 #import "SUNowPlayingManager.h"
 #import "SUNowPlayingWindow.h"
-#import "UIImage+Private.h"
 #import "UIStatusBar.h"
 #import <rootless.h>
 
@@ -28,6 +27,7 @@
 		}
 		self.bannerOffset = statusBarHeight;
 		self.useNotchedLayout = statusBarHeight > 20;
+		self.nowPlayingApp = @"com.apple.Music";
 
 		self.bannerView = [[SUNowPlayingBanner alloc] initWithNotchedLayout:self.useNotchedLayout];
 		self.bannerView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -35,8 +35,6 @@
 
 		CGFloat offset = -(self.bannerOffset+self.bannerHeightConstraint.constant/2);
 		[self.bannerView setCenter:CGPointMake(self.bannerView.center.x, self.location == 0 ? offset : [UIScreen mainScreen].bounds.size.height - offset)];
-
-		self.bannerView.applicationIcon = [UIImage _applicationIconImageForBundleIdentifier:@"com.apple.Music" format:2];
 
 		UIPanGestureRecognizer *dragRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragged:)];
 		[dragRecognizer setMinimumNumberOfTouches:1];
@@ -95,6 +93,7 @@
 		if ([info[@"locked"] isEqual:@(1)]) return;
 
 		if (self.previousNowPlayingApp) {
+			// restore previous app after switching to preferences for testing banner
 			self.nowPlayingApp = self.previousNowPlayingApp;
 			self.previousNowPlayingApp = nil;
 		}
@@ -108,16 +107,16 @@
 			[self animateOutWithCompletion:^(BOOL finished) {
 				self.bannerView.title = title;
 				self.bannerView.artist = artist;
+				self.bannerView.nowPlayingAppIdentifier = self.nowPlayingApp;
 				self.bannerView.progressView.duration = [duration doubleValue];
 				if (elapsed != nil) self.bannerView.progressView.elapsedTime = [elapsed doubleValue];
 				if (artworkData != nil) self.bannerView.albumImage = [UIImage imageWithData:artworkData];
-				self.bannerView.applicationIcon = [UIImage _applicationIconImageForBundleIdentifier:self.nowPlayingApp format:2];
 				[self animateIn];
 			}];
 		} else {
-			self.bannerView.applicationIcon = [UIImage _applicationIconImageForBundleIdentifier:self.nowPlayingApp format:2];
 			self.bannerView.title = title;
 			self.bannerView.artist = artist;
+			self.bannerView.nowPlayingAppIdentifier = self.nowPlayingApp;
 			self.bannerView.progressView.duration = [duration doubleValue];
 			if (elapsed != nil) self.bannerView.progressView.elapsedTime = [elapsed doubleValue];
 			if (artworkData != nil) self.bannerView.albumImage = [UIImage imageWithData:artworkData];
@@ -139,7 +138,6 @@
 
 - (void)appPlayingUpdate:(NSString *)bundleIdentifier {
 	if (bundleIdentifier) {
-		self.bannerView.applicationIcon = [UIImage _applicationIconImageForBundleIdentifier:bundleIdentifier format:2];
 		self.nowPlayingApp = bundleIdentifier;
 	}
 }

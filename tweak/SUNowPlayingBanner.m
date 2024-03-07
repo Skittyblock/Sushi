@@ -1,7 +1,7 @@
 #import "SUNowPlayingBanner.h"
-#import "SBUIController.h"
 #import "SBApplication.h"
-#import "SBApplicationController.h"
+#import "UIApplication+Private.h"
+#import "UIImage+Private.h"
 #import "UIImage+ColorArt.h"
 #import "UIColor+SushiColors.h"
 #import <rootless.h>
@@ -247,8 +247,7 @@
 
 - (void)openNowPlayingApp {
 	if (self.nowPlayingAppIdentifier) {
-		SBApplication *app = [[NSClassFromString(@"SBApplicationController") sharedInstance] applicationWithBundleIdentifier:self.nowPlayingAppIdentifier];
-		[[NSClassFromString(@"SBUIController") sharedInstanceIfExists] activateApplication:app fromIcon:nil location:0 activationSettings:nil actions:nil];
+		[[UIApplication sharedApplication] launchApplicationWithIdentifier:self.nowPlayingAppIdentifier suspended:NO];
 	}
 }
 
@@ -363,6 +362,11 @@
 - (void)setTintStrength:(CGFloat)tintStrength {
 	_tintStrength = tintStrength;
 	self.tintView.alpha = tintStrength;
+}
+
+- (void)setNowPlayingAppIdentifier:(NSString *)identifier {
+	_nowPlayingAppIdentifier = identifier;
+	self.applicationIcon = [UIImage _applicationIconImageForBundleIdentifier:identifier format:2];
 }
 
 - (void)setApplicationIcon:(UIImage *)icon {
