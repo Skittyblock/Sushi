@@ -191,7 +191,7 @@
 		self.backgroundColor = [UIColor clearColor];
 	}
 
-	if (self.matchSystemTheme) {
+	if (self.darkMode && self.matchSystemTheme) {
 		if (self.oled && !self.blurred) self.backgroundColor = [UIColor systemBackgroundColor];
 		else if (!self.blurred) self.backgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
 		else if (self.blurred) self.visualEffectView.effect = [UIBlurEffect effectWithStyle:[self getBlurStyleWithAppearance:0 thickness:self.blurThickness]];
@@ -389,7 +389,7 @@
 
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
 	[super traitCollectionDidChange:previousTraitCollection];
-	if (self.matchSystemTheme) {
+	if (self.darkMode && self.matchSystemTheme) {
 		if (self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
 			self.layer.shadowOpacity = DARK_SHADOW_OPACITY;
 		} else {
