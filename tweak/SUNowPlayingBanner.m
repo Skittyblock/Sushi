@@ -254,9 +254,11 @@
 - (void)setExpanded:(BOOL)expanded {
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"xyz.skitty.sushi.expanded" object:nil userInfo:@{ @"expanded": [NSNumber numberWithBool:expanded] }];
 	if (!_expanded && expanded) { // Expand view into media player
-		[UIView transitionWithView:self.iconView duration:0.3 options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
-			[self.iconView setImage:self.albumImage forState:UIControlStateNormal];
-		} completion:nil];
+		if (!self.showBannerArt) {
+			[UIView transitionWithView:self.iconView duration:0.3 options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+				[self.iconView setImage:self.albumImage forState:UIControlStateNormal];
+			} completion:nil];
+		}
 		
 		[UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
 			self.transform = CGAffineTransformMakeScale(1, 1);
@@ -297,9 +299,11 @@
 			[self.superview layoutIfNeeded];
 		} completion:nil];
 	} else if (_expanded && !expanded) { // Contract view into banner
-		[UIView transitionWithView:self.iconView duration:0.3 options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
-			[self.iconView setImage:self.applicationIcon forState:UIControlStateNormal];
-		} completion:nil];
+		if (!self.showBannerArt) {
+			[UIView transitionWithView:self.iconView duration:0.3 options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+				[self.iconView setImage:self.applicationIcon forState:UIControlStateNormal];
+			} completion:nil];
+		}
 		
 		[UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
 			self.transform = CGAffineTransformMakeScale(1, 1);
@@ -371,13 +375,13 @@
 
 - (void)setApplicationIcon:(UIImage *)icon {
 	_applicationIcon = icon;
-	if (!self.expanded) [self.iconView setImage:icon forState:UIControlStateNormal];
+	if (!self.expanded && !self.showBannerArt) [self.iconView setImage:icon forState:UIControlStateNormal];
 }
 
 - (void)setAlbumImage:(UIImage *)image {
 	_albumImage = image;
 	self.tintView.backgroundColor = [image backgroundColor];
-	if (self.expanded) [self.iconView setImage:image forState:UIControlStateNormal];
+	if (self.expanded || self.showBannerArt) [self.iconView setImage:image forState:UIControlStateNormal];
 }
 
 - (void)setTitle:(NSString *)title {

@@ -56,6 +56,7 @@ static void refreshPrefs() {
 	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.blurThickness = [([settings objectForKey:@"blurThickness"] ?: @(1)) intValue];
 	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.tintStrength = [([settings objectForKey:@"tint"] ?: @(NO)) boolValue] ? [([settings objectForKey:@"tintStrength"] ?: @(0.3)) floatValue] : 0;
 	[[SUNowPlayingManager sharedManager].window.rootViewController.bannerView updateColors];
+	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.showBannerArt = [([settings objectForKey:@"showBannerArt"] ?: @(NO)) boolValue];
 
 	BOOL customDismissInterval = [([settings objectForKey:@"customDismissInterval"] ?: @(NO)) boolValue];
 	[SUNowPlayingManager sharedManager].window.rootViewController.dismissInterval = customDismissInterval ? [([settings objectForKey:@"dismissInterval"] ?: @(3)) intValue] : 3;

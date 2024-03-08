@@ -299,6 +299,26 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Show the song's album art instead of the now playing app icon on the banner.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>xyz.skitty.sushi</string>
+			<key>PostNotification</key>
+			<string>xyz.skitty.sushi.prefschanged</string>
+			<key>key</key>
+			<string>showBannerArt</string>
+			<key>label</key>
+			<string>Show Album Art On Banner</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
 		</dict>
 		<dict>
 			<key>cell</key>

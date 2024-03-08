@@ -11,6 +11,7 @@
 @property (nonatomic, assign) BOOL matchSystemTheme;
 @property (nonatomic, assign) BOOL darkMode;
 @property (nonatomic, assign) BOOL oled;
+@property (nonatomic, assign) BOOL showBannerArt;
 @property (nonatomic, assign) NSInteger blurThickness;
 @property (nonatomic, assign) CGFloat tintStrength;
 
