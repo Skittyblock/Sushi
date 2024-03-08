@@ -23,6 +23,7 @@
 
 @property (nonatomic, assign) NSInteger location; // 0 = top, 1 = bottom
 @property (nonatomic, assign) NSInteger dismissInterval;
+@property (nonatomic, assign) BOOL disableAutoDismiss;
 @property (nonatomic, assign) BOOL dismissWhenExpanded;
 @property (nonatomic, assign) BOOL shouldPlayFeedback;
 @property (nonatomic, assign) BOOL playedFeedback;

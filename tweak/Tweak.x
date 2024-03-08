@@ -47,6 +47,7 @@ static void refreshPrefs() {
 	enabledInApp = [([settings objectForKey:@"enabledInApp"] ?: @(NO)) boolValue];
 	[SUNowPlayingManager sharedManager].window.rootViewController.shouldPlayFeedback = YES;
 	[SUNowPlayingManager sharedManager].window.rootViewController.location = [([settings objectForKey:@"location"] ?: @(0)) intValue];
+	[SUNowPlayingManager sharedManager].window.rootViewController.disableAutoDismiss = [([settings objectForKey:@"disableAutoDismiss"] ?: @(NO)) boolValue];
 	[SUNowPlayingManager sharedManager].window.rootViewController.dismissWhenExpanded = [([settings objectForKey:@"dismissWhenExpanded"] ?: @(NO)) boolValue];
 	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.matchSystemTheme = [([settings objectForKey:@"matchSystemTheme"] ?: @(YES)) boolValue];
 	[SUNowPlayingManager sharedManager].window.rootViewController.bannerView.darkMode = [([settings objectForKey:@"darkMode"] ?: @(YES)) boolValue];

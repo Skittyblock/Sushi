@@ -133,6 +133,7 @@
 		self.lastTouchedDate = [NSDate date];
 		return;
 	}
+	if (self.disableAutoDismiss) return;
 	if (self.bannerView.expanded && !self.dismissWhenExpanded) return;
 	NSTimeInterval interval = -[self.lastTouchedDate timeIntervalSinceNow];
 	if (interval > self.dismissInterval) {
