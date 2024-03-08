@@ -138,9 +138,9 @@
 		[self.progressView.heightAnchor constraintEqualToConstant:31],
 
 		[self.musicControlsView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
-		[self.musicControlsView.topAnchor constraintEqualToAnchor:self.topAnchor constant:106],
-		[self.musicControlsView.widthAnchor constraintEqualToConstant:180],
-		[self.musicControlsView.heightAnchor constraintEqualToConstant:28],
+		[self.musicControlsView.topAnchor constraintEqualToAnchor:self.topAnchor constant:106 - 10],
+		[self.musicControlsView.widthAnchor constraintEqualToConstant:180 + 20],
+		[self.musicControlsView.heightAnchor constraintEqualToConstant:28 + 20],
 
 		self.iconViewTopConstraint,
 		self.iconViewLeadingConstraint,
