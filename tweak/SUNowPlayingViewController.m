@@ -92,8 +92,6 @@
 		self.currentTitle = title;
 		self.currentArtist = artist;
 
-		if ([info[@"enabledInApp"] isEqual:@(0)] && info[@"currentApplication"] == self.nowPlayingApp) return;
-		if ([(NSArray *)info[@"blacklistedApps"] containsObject:self.nowPlayingApp]) return;
 		if ([info[@"locked"] isEqual:@(1)]) return;
 
 		if (self.previousNowPlayingApp) {
@@ -105,9 +103,13 @@
 			self.previousNowPlayingApp = self.nowPlayingApp;
 			self.nowPlayingApp = @"com.apple.Preferences";
 			self.testingBanner = NO;
+		} else if ([(NSArray *)info[@"blacklistedApps"] containsObject:self.nowPlayingApp]) {
+			return;
 		}
 
 		if (!self.bannerView.expanded) {
+			if ([info[@"enabledInApp"] isEqual:@(0)] && [info[@"currentApplication"] isEqual:self.nowPlayingApp]) return;
+
 			[self animateOutWithCompletion:^(BOOL finished) {
 				self.bannerView.title = title;
 				self.bannerView.artist = artist;
