@@ -5,9 +5,19 @@
 #import "UIStatusBar.h"
 #import <rootless.h>
 
+#define FEEDBACK_THRESHOLD 20 // drag distance to trigger haptic feedback + expansion
+
+// banner sizes
 #define BANNER_WIDTH 350 // maximum width for the banner
 #define EXPANDED_WIDTH 338 // width of the expanded view with controls
 #define EXPANDED_WIDTH_NOTCHED 350
+
+#define BANNER_HEIGHT 44
+#define EXPANDED_HEIGHT 152
+
+// locations
+#define TOP 0
+#define BOTTOM 1
 
 @implementation SUNowPlayingViewController
 
@@ -15,8 +25,6 @@
 	self = [super init];
 
 	if (self) {
-		self.location = 0;
-
 		double statusBarHeight = 0;
 		if (@available(iOS 14.0, *)) {
 			statusBarHeight = [NSClassFromString(@"UIStatusBar") _heightForStyle:306 orientation:1 forStatusBarFrame:NO inWindow:nil];
@@ -25,7 +33,8 @@
 			statusBarHeight = [NSClassFromString(@"UIStatusBar") _heightForStyle:306 orientation:1 forStatusBarFrame:NO];
 			if (statusBarHeight <= 0) statusBarHeight = [NSClassFromString(@"UIStatusBar_Modern") _heightForStyle:1 orientation:1 forStatusBarFrame:NO];
 		}
-		self.bannerOffset = statusBarHeight;
+		self.bannerInset = statusBarHeight;
+		self.bannerOffset = 0;
 		self.useNotchedLayout = statusBarHeight > 20;
 		self.nowPlayingApp = @"com.apple.Music";
 
@@ -33,8 +42,7 @@
 		self.bannerView.translatesAutoresizingMaskIntoConstraints = NO;
 		[self.view addSubview:self.bannerView];
 
-		CGFloat offset = -(self.bannerOffset+self.bannerHeightConstraint.constant/2);
-		[self.bannerView setCenter:CGPointMake(self.bannerView.center.x, self.location == 0 ? offset : [UIScreen mainScreen].bounds.size.height - offset)];
+		self.location = 0;
 
 		UIPanGestureRecognizer *dragRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragged:)];
 		[dragRecognizer setMinimumNumberOfTouches:1];
@@ -42,18 +50,14 @@
 		[self.bannerView addGestureRecognizer:dragRecognizer];
 
 		self.bannerLeadingConstraint = [self.bannerView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor];
-		if (self.location == 0) {
-			self.bannerTopConstraint = [self.bannerView.topAnchor constraintEqualToAnchor:self.view.topAnchor constant:self.bannerOffset];
-		} else {
-			self.bannerTopConstraint = [self.bannerView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:-self.bannerOffset];
-		}
 		self.bannerWidthConstraint = [self.bannerView.widthAnchor constraintLessThanOrEqualToConstant:self.useNotchedLayout ? EXPANDED_WIDTH_NOTCHED : EXPANDED_WIDTH];
 		self.bannerHeightConstraint = [self.bannerView.heightAnchor constraintEqualToConstant:44];
 
-		self.bannerLeadingConstraint.active = YES;
-		self.bannerTopConstraint.active = YES;
-		self.bannerWidthConstraint.active = YES;
-		self.bannerHeightConstraint.active = YES;
+		[NSLayoutConstraint activateConstraints:@[
+			self.bannerLeadingConstraint,
+			self.bannerWidthConstraint,
+			self.bannerHeightConstraint
+		]];
 
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(expansionChanged:) name:@"xyz.skitty.sushi.expanded" object:nil];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sendTestBanner) name:@"xyz.skitty.sushi.test" object:nil];
@@ -145,18 +149,15 @@
 - (void)animateInAfter:(NSTimeInterval)seconds {
 	[self.window.manager showWindow];
 	self.bannerView.userInteractionEnabled = YES;
-	self.bannerView.transform = CGAffineTransformIdentity;
 
-	CGFloat offset = -(self.bannerOffset + self.bannerHeightConstraint.constant / 2);
-	if (self.location == 1) offset = [UIScreen mainScreen].bounds.size.height - offset;
-	[self.bannerView setCenter:CGPointMake(self.bannerView.center.x, offset)];
+	self.bannerOffset = -(self.bannerInset + self.bannerHeightConstraint.constant);
+	[self updateBannerPosition];
 
 	[self.bannerView updateColors];
 
 	[UIView animateWithDuration:0.4 delay:seconds options:UIViewAnimationOptionCurveEaseOut animations:^{
-		CGFloat offset = self.bannerOffset + self.bannerHeightConstraint.constant / 2;
-		if (self.location == 1) offset = [UIScreen mainScreen].bounds.size.height - offset;
-		[self.bannerView setCenter:CGPointMake(self.bannerView.center.x, offset)];
+		self.bannerOffset = 0;
+		[self updateBannerPosition];
 		self.dismissTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(tickDismissTimer) userInfo:nil repeats:YES];
 	} completion:nil];
 }
@@ -171,9 +172,8 @@
 	self.lastTouchedDate = nil;
 	self.bannerView.userInteractionEnabled = NO;
 	[UIView animateWithDuration:0.4 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-		CGFloat offset = -(self.bannerOffset + self.bannerHeightConstraint.constant / 2) * 2;
-		if (self.location == 1) offset *= -1;
-		self.bannerView.transform = CGAffineTransformTranslate(CGAffineTransformIdentity, 0, offset);
+		self.bannerOffset = -(self.bannerInset + self.bannerHeightConstraint.constant);
+		[self updateBannerPosition];
 	} completion:completion];
 }
 
@@ -181,40 +181,35 @@
 	[self animateOutWithCompletion:^(BOOL finished) {
 		self.bannerView.expanded = NO;
 		self.bannerView.userInteractionEnabled = YES;
-		self.bannerView.transform = CGAffineTransformIdentity;
 		[self.window.manager hideWindow];
 	}];
 }
 
 - (void)dragged:(UIPanGestureRecognizer *)sender {
 	static CGFloat pos;
-	static CGFloat fakePos;
 
 	CGPoint translatedPoint = [sender translationInView:self.bannerView];
 	CGFloat velocity = [sender velocityInView:self.bannerView].y;
+	if (self.location == BOTTOM) velocity *= -1;
 
-	CGFloat startPos = self.bannerOffset + self.bannerHeightConstraint.constant / 2;
-	CGFloat fakeStartPos = self.bannerOffset + self.bannerHeightConstraint.constant / 2;
-	if (self.location == 1) startPos = [UIScreen mainScreen].bounds.size.height - startPos;
+	CGFloat startPos = self.bannerInset;
 
 	self.lastTouchedDate = [NSDate date];
 
 	if (sender.state == UIGestureRecognizerStateBegan) {
 		pos = startPos;
-		fakePos = fakeStartPos;
 	} else if (sender.state == UIGestureRecognizerStateChanged) {
 		CGFloat translatedY = translatedPoint.y;
-		CGFloat distance = self.bannerView.center.y + translatedY;
+		if (self.location == BOTTOM) translatedY *= -1;
+		CGFloat distance = startPos + self.bannerOffset + translatedY;
 		pos += translatedY;
-		if (self.location == 1) fakePos -= translatedY;
-		if (self.location == 0 && distance > startPos) distance = startPos * (1 + log10(pos/startPos));
-		else if (self.location == 1 && distance < startPos) distance = [UIScreen mainScreen].bounds.size.height - (fakeStartPos * (1 + log10(fakePos/fakeStartPos)));
+		if (distance > startPos) distance = startPos * (1 + log10(pos/startPos));
 
-		translatedPoint = CGPointMake(self.bannerView.center.x, distance);
-		[self.bannerView setCenter:translatedPoint];
+		self.bannerOffset = distance - startPos;
+		[self updateBannerPosition];
 		[sender setTranslation:CGPointZero inView:self.bannerView];
 
-		if ((self.location == 0 && self.bannerView.center.y > startPos + 20) || (self.location == 1 && self.bannerView.center.y < startPos - 20)) {
+		if (self.bannerOffset > FEEDBACK_THRESHOLD) {
 			if (self.shouldPlayFeedback && !self.playedFeedback && !self.bannerView.expanded) {
 				UIImpactFeedbackGenerator *feedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium];
 				[feedback impactOccurred];
@@ -223,17 +218,15 @@
 		}
 	} else if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
 		self.playedFeedback = NO;
-		if (self.location == 0 && self.bannerView.center.y < startPos && velocity < 0) return [self animateOut];
-		else if (self.location == 1 && self.bannerView.center.y > startPos && velocity > 0) return [self animateOut];
-
-		if (self.location == 0 && self.bannerView.center.y > startPos + 20 && !self.bannerView.expanded) self.bannerView.expanded = YES;
-		else if (self.location == 1 && self.bannerView.center.y < startPos - 20 && !self.bannerView.expanded) self.bannerView.expanded = YES;
-
-		startPos = self.bannerOffset + self.bannerHeightConstraint.constant / 2;
-		if (self.location == 1) startPos = [UIScreen mainScreen].bounds.size.height - startPos;
-
+		if (self.bannerOffset < 0 && velocity < 0) {
+			return [self animateOut];
+		}
+		if (self.bannerOffset > FEEDBACK_THRESHOLD && !self.bannerView.expanded) {
+			self.bannerView.expanded = YES;
+		}
 		[UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-			[self.bannerView setCenter:CGPointMake(self.bannerView.center.x, startPos)];
+			self.bannerOffset = 0;
+			[self updateBannerPosition];
 		} completion:nil];
 	}
 }
@@ -245,12 +238,12 @@
 		self.bannerWidthConstraint.active = NO;
 		self.bannerWidthConstraint = [self.bannerView.widthAnchor constraintEqualToConstant:self.useNotchedLayout ? EXPANDED_WIDTH_NOTCHED : EXPANDED_WIDTH];
 		self.bannerWidthConstraint.active = YES;
-		self.bannerHeightConstraint.constant = 152;
+		self.bannerHeightConstraint.constant = EXPANDED_HEIGHT;
 	} else {
 		self.bannerWidthConstraint.active = NO;
 		self.bannerWidthConstraint = [self.bannerView.widthAnchor constraintLessThanOrEqualToConstant:BANNER_WIDTH];
 		self.bannerWidthConstraint.active = YES;
-		self.bannerHeightConstraint.constant = 44;
+		self.bannerHeightConstraint.constant = BANNER_HEIGHT;
 	}
 }
 
@@ -282,9 +275,22 @@
 	_location = location;
 	if (self.bannerTopConstraint) {
 		self.bannerTopConstraint.active = NO;
-		if (location == 0) self.bannerTopConstraint = [self.bannerView.topAnchor constraintEqualToAnchor:self.view.topAnchor constant:self.bannerOffset];
-		else self.bannerTopConstraint = [self.bannerView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:-self.bannerOffset];
-		self.bannerTopConstraint.active = YES;
+	}
+	if (location == TOP) {
+		self.bannerTopConstraint = [self.bannerView.topAnchor constraintEqualToAnchor:self.view.topAnchor constant:self.bannerInset];
+	} else {
+		self.bannerTopConstraint = [self.bannerView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:-self.bannerInset];
+	}
+	self.bannerTopConstraint.active = YES;
+	[self updateBannerPosition];
+}
+
+- (void)updateBannerPosition {
+	if (self.bannerTopConstraint) {
+		CGFloat constant = self.bannerInset + self.bannerOffset;
+		if (self.location == BOTTOM) constant *= -1;
+		self.bannerTopConstraint.constant = constant;
+		[self.view layoutIfNeeded];
 	}
 }
 

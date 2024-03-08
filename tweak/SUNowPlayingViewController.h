@@ -10,6 +10,7 @@
 @property (nonatomic, strong) SUNowPlayingBanner *bannerView;
 
 @property (nonatomic, assign) BOOL useNotchedLayout;
+@property (nonatomic, assign) CGFloat bannerInset;
 @property (nonatomic, assign) CGFloat bannerOffset;
 @property (nonatomic, strong) NSString *currentTitle;
 @property (nonatomic, strong) NSString *currentArtist;

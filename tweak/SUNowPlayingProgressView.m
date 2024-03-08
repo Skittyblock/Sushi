@@ -55,32 +55,35 @@
 }
 
 - (void)activateConstraints {
-	[self.remainingTrack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:6].active = YES;
-	[self.remainingTrack.topAnchor constraintEqualToAnchor:self.topAnchor constant:8].active = YES;
-	[self.remainingTrack.widthAnchor constraintEqualToConstant:300].active = YES;
-	[self.remainingTrack.heightAnchor constraintEqualToConstant:3].active = YES;
-
-	[self.elapsedTrack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:6].active = YES;
-	[self.elapsedTrack.topAnchor constraintEqualToAnchor:self.topAnchor constant:8].active = YES;
 	self.elapsedTrackWidthConstraint = [self.elapsedTrack.widthAnchor constraintEqualToConstant:3];
-	self.elapsedTrackWidthConstraint.active = YES;
-	[self.elapsedTrack.heightAnchor constraintEqualToConstant:3].active = YES;
-
 	self.knobViewLeadingConstraint = [self.knobView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor];
-	self.knobViewLeadingConstraint.active = YES;
-	[self.knobView.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-	[self.knobView.widthAnchor constraintEqualToConstant:19].active = YES;
-	[self.knobView.heightAnchor constraintEqualToConstant:19].active = YES;
 
-	[self.elapsedLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:6].active = YES;
-	[self.elapsedLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:19].active = YES;
-	[self.elapsedLabel.widthAnchor constraintEqualToConstant:50].active = YES;
-	[self.elapsedLabel.heightAnchor constraintEqualToConstant:12].active = YES;
+	[NSLayoutConstraint activateConstraints:@[
+		[self.remainingTrack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:6],
+		[self.remainingTrack.topAnchor constraintEqualToAnchor:self.topAnchor constant:8],
+		[self.remainingTrack.widthAnchor constraintEqualToConstant:300],
+		[self.remainingTrack.heightAnchor constraintEqualToConstant:3],
 
-	[self.remainingLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-6].active = YES;
-	[self.remainingLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:19].active = YES;
-	[self.remainingLabel.widthAnchor constraintEqualToConstant:50].active = YES;
-	[self.remainingLabel.heightAnchor constraintEqualToConstant:12].active = YES;
+		[self.elapsedTrack.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:6],
+		[self.elapsedTrack.topAnchor constraintEqualToAnchor:self.topAnchor constant:8],
+		self.elapsedTrackWidthConstraint,
+		[self.elapsedTrack.heightAnchor constraintEqualToConstant:3],
+
+		self.knobViewLeadingConstraint,
+		[self.knobView.topAnchor constraintEqualToAnchor:self.topAnchor],
+		[self.knobView.widthAnchor constraintEqualToConstant:19],
+		[self.knobView.heightAnchor constraintEqualToConstant:19],
+
+		[self.elapsedLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:6],
+		[self.elapsedLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:19],
+		[self.elapsedLabel.widthAnchor constraintEqualToConstant:50],
+		[self.elapsedLabel.heightAnchor constraintEqualToConstant:12],
+
+		[self.remainingLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-6],
+		[self.remainingLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:19],
+		[self.remainingLabel.widthAnchor constraintEqualToConstant:50],
+		[self.remainingLabel.heightAnchor constraintEqualToConstant:12],
+	]];
 }
 
 - (void)startTimer {
@@ -89,8 +92,10 @@
 }
 
 - (void)stopTimer {
-	if (self.timer) [self.timer invalidate];
-	self.timer = nil;
+	if (self.timer) {
+		[self.timer invalidate];
+		self.timer = nil;
+	}
 }
 
 - (void)tickTimeElapsed {
