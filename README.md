@@ -1,7 +1,7 @@
 # Sushi
-Now playing banner with integrated media controls for iOS 13-16.
+Now playing banner with integrated media controls for iOS 13-17.
 
-## Screenshots
+## Preview
 <img src="Preview.png" alt="Preview" />
 
 ## Installing

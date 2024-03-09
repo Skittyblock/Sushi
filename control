@@ -1,6 +1,6 @@
 Package: xyz.skitty.sushi
 Name: Sushi
-Version: 1.0
+Version: 1.0.1
 Architecture: iphoneos-arm
 Description: Now playing banner with integrated media controls!
 Maintainer: Skitty

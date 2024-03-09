@@ -63,40 +63,20 @@
 	[UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
 		switch (orientation) {
 			case UIInterfaceOrientationPortrait:
-				if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-					self.transform = CGAffineTransformMakeRotation(-M_PI_2);
-					self.frame = CGRectMake(0, 0, self.screen.bounds.size.height, self.screen.bounds.size.width);
-				} else {
-					self.transform = CGAffineTransformIdentity;
-					self.frame = self.screen.bounds;
-				}
+				self.transform = CGAffineTransformIdentity;
+				self.frame = self.screen.bounds;
 				break;
 			case UIInterfaceOrientationPortraitUpsideDown:
-				if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-					self.transform = CGAffineTransformMakeRotation(M_PI_2);
-					self.frame = CGRectMake(0, 0, self.screen.bounds.size.height, self.screen.bounds.size.width);
-				} else {
-					self.transform = CGAffineTransformMakeRotation(M_PI);
-					self.frame = self.screen.bounds;
-				}
+				self.transform = CGAffineTransformMakeRotation(M_PI);
+				self.frame = self.screen.bounds;
 				break;
 			case UIInterfaceOrientationLandscapeLeft:
-				if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-					self.transform = CGAffineTransformMakeRotation(M_PI);
-					self.frame = self.screen.bounds;
-				} else {
-					self.transform = CGAffineTransformMakeRotation(-M_PI_2);
-					self.frame = CGRectMake(0, 0, self.screen.bounds.size.height, self.screen.bounds.size.width);
-				}
+				self.transform = CGAffineTransformMakeRotation(-M_PI_2);
+				self.frame = CGRectMake(0, 0, self.screen.bounds.size.height, self.screen.bounds.size.width);
 				break;
 			case UIInterfaceOrientationLandscapeRight:
-				if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-					self.transform = CGAffineTransformIdentity;
-					self.frame = self.screen.bounds;
-				} else {
-					self.transform = CGAffineTransformMakeRotation(M_PI_2);
-					self.frame = CGRectMake(0, 0, self.screen.bounds.size.height, self.screen.bounds.size.width);
-				}
+				self.transform = CGAffineTransformMakeRotation(M_PI_2);
+				self.frame = CGRectMake(0, 0, self.screen.bounds.size.height, self.screen.bounds.size.width);
 				break;
 			default:
 				break;
